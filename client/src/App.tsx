@@ -7,6 +7,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { BottomNav } from "@/components/BottomNav";
 
 import Dashboard from "@/pages/dashboard";
 import Profile from "@/pages/profile";
@@ -50,11 +51,12 @@ function App() {
                   <SidebarTrigger data-testid="button-sidebar-toggle" />
                   <ThemeToggle />
                 </header>
-                <main className="flex-1 overflow-auto p-6 md:p-8">
+                <main className="flex-1 overflow-auto p-6 md:p-8 pb-20 md:pb-8">
                   <Router />
                 </main>
               </div>
             </div>
+            <BottomNav />
           </SidebarProvider>
           <Toaster />
         </TooltipProvider>
