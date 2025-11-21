@@ -1,18 +1,123 @@
-import { sql } from "drizzle-orm";
-import { pgTable, text, varchar } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+// Student Profile Schema
+export interface StudentProfile {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  dateOfBirth: string;
+  address: string;
+  education: string;
+  skills: string;
+  experience: string;
+  photoUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const insertStudentProfileSchema = z.object({
+  fullName: z.string().min(1, "Full name is required"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().min(1, "Phone number is required"),
+  dateOfBirth: z.string(),
+  address: z.string(),
+  education: z.string(),
+  skills: z.string(),
+  experience: z.string(),
+  photoUrl: z.string().optional(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+export type InsertStudentProfile = z.infer<typeof insertStudentProfileSchema>;
+
+// Document Schema
+export interface Document {
+  id: string;
+  studentId: string;
+  name: string;
+  type: string;
+  size: string;
+  url: string;
+  uploadedDate: string;
+}
+
+export const insertDocumentSchema = z.object({
+  studentId: z.string(),
+  name: z.string().min(1, "Document name is required"),
+  type: z.string(),
+  size: z.string(),
+  url: z.string(),
 });
 
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
+export type InsertDocument = z.infer<typeof insertDocumentSchema>;
+
+// Signature Schema
+export interface Signature {
+  id: string;
+  studentId: string;
+  dataUrl: string;
+  createdAt: string;
+}
+
+export const insertSignatureSchema = z.object({
+  studentId: z.string(),
+  dataUrl: z.string().min(1, "Signature data is required"),
+});
+
+export type InsertSignature = z.infer<typeof insertSignatureSchema>;
+
+// Job Schema
+export interface Job {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  type: string;
+  deadline: string;
+  description: string;
+  salary?: string;
+  requirements?: string;
+  createdAt: string;
+}
+
+export const insertJobSchema = z.object({
+  title: z.string().min(1, "Job title is required"),
+  company: z.string().min(1, "Company name is required"),
+  location: z.string().min(1, "Location is required"),
+  type: z.string(),
+  deadline: z.string(),
+  description: z.string(),
+  salary: z.string().optional(),
+  requirements: z.string().optional(),
+});
+
+export type InsertJob = z.infer<typeof insertJobSchema>;
+
+// Application Schema
+export interface Application {
+  id: string;
+  studentId: string;
+  jobId: string;
+  jobTitle: string;
+  company: string;
+  appliedDate: string;
+  status: "pending" | "shortlisted" | "rejected" | "selected";
+  deadline?: string;
+  admitCardUrl?: string;
+  resultUrl?: string;
+  formData?: string; // JSON string of form field mappings
+}
+
+export const insertApplicationSchema = z.object({
+  studentId: z.string(),
+  jobId: z.string(),
+  jobTitle: z.string(),
+  company: z.string(),
+  status: z.enum(["pending", "shortlisted", "rejected", "selected"]).default("pending"),
+  deadline: z.string().optional(),
+  admitCardUrl: z.string().optional(),
+  resultUrl: z.string().optional(),
+  formData: z.string().optional(),
+});
+
+export type InsertApplication = z.infer<typeof insertApplicationSchema>;
