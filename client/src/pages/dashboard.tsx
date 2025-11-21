@@ -1,49 +1,70 @@
 import { StatsCard } from "@/components/StatsCard";
 import { ApplicationCard } from "@/components/ApplicationCard";
 import { JobCard } from "@/components/JobCard";
-import { Briefcase, ClipboardList, CheckCircle, Clock } from "lucide-react";
+import { Briefcase, ClipboardList, CheckCircle, Clock, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import type { Application, Job, StudentProfile } from "@shared/schema";
 
 export default function Dashboard() {
+  const { data: profile } = useQuery<StudentProfile>({
+    queryKey: ["/api/profile"],
+  });
+
+  const { data: applications = [], isLoading: applicationsLoading } = useQuery<Application[]>({
+    queryKey: ["/api/applications", profile?.id],
+    enabled: !!profile?.id,
+    queryFn: async () => {
+      const response = await fetch(`/api/applications/${profile!.id}`);
+      if (!response.ok) throw new Error("Failed to fetch applications");
+      return response.json();
+    },
+  });
+
+  const { data: jobs = [], isLoading: jobsLoading } = useQuery<Job[]>({
+    queryKey: ["/api/jobs"],
+  });
+
   const stats = [
-    { title: "Total Applications", value: 12, icon: Briefcase, description: "Submitted this month" },
-    { title: "Pending", value: 5, icon: Clock, description: "Awaiting response" },
-    { title: "Shortlisted", value: 4, icon: ClipboardList, description: "Interview scheduled" },
-    { title: "Selected", value: 1, icon: CheckCircle, description: "Job offers" },
+    {
+      title: "Total Applications",
+      value: applications.length,
+      icon: Briefcase,
+      description: "All time",
+    },
+    {
+      title: "Pending",
+      value: applications.filter((a) => a.status === "pending").length,
+      icon: Clock,
+      description: "Awaiting response",
+    },
+    {
+      title: "Shortlisted",
+      value: applications.filter((a) => a.status === "shortlisted").length,
+      icon: ClipboardList,
+      description: "Interview scheduled",
+    },
+    {
+      title: "Selected",
+      value: applications.filter((a) => a.status === "selected").length,
+      icon: CheckCircle,
+      description: "Job offers",
+    },
   ];
 
-  const recentApplications = [
-    {
-      id: "1",
-      jobTitle: "Software Engineer",
-      company: "Tech Solutions Ltd",
-      appliedDate: "2025-11-18",
-      status: "shortlisted" as const,
-      deadline: "2025-12-25",
-      admitCardUrl: "#",
-    },
-    {
-      id: "2",
-      jobTitle: "Data Analyst",
-      company: "Data Corp",
-      appliedDate: "2025-11-15",
-      status: "pending" as const,
-    },
-  ];
+  const recentApplications = applications
+    .sort((a, b) => new Date(b.appliedDate).getTime() - new Date(a.appliedDate).getTime())
+    .slice(0, 2);
 
-  const upcomingJobs = [
-    {
-      id: "3",
-      title: "Junior Developer",
-      company: "StartUp Inc",
-      location: "Bangalore, India",
-      type: "Full-time",
-      deadline: "2025-11-30",
-      description: "Exciting opportunity to work with cutting-edge technologies in a dynamic startup environment.",
-      salary: "₹5-7 LPA",
-      applied: false,
-    },
-  ];
+  const recommendedJobs = jobs.slice(0, 3);
+
+  if (applicationsLoading || jobsLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -75,13 +96,17 @@ export default function Dashboard() {
         <Card className="p-6">
           <h2 className="text-2xl font-semibold mb-4">Recommended Jobs</h2>
           <div className="space-y-4">
-            {upcomingJobs.map((job) => (
-              <JobCard
-                key={job.id}
-                job={job}
-                onApply={(id) => console.log('Apply to:', id)}
-              />
-            ))}
+            {recommendedJobs.length > 0 ? (
+              recommendedJobs.map((job) => (
+                <JobCard
+                  key={job.id}
+                  job={job}
+                  onApply={(id) => console.log('Apply to:', id)}
+                />
+              ))
+            ) : (
+              <p className="text-muted-foreground text-center py-4">No jobs available</p>
+            )}
           </div>
         </Card>
       </div>

@@ -55,6 +55,27 @@ export class MemStorage implements IStorage {
     this.signatures = new Map();
     this.jobs = new Map();
     this.applications = new Map();
+    
+    // Seed a default profile for MVP
+    this.seedDefaultProfile();
+  }
+
+  private seedDefaultProfile() {
+    const defaultProfile: StudentProfile = {
+      id: "default-student-id",
+      fullName: "",
+      email: "",
+      phone: "",
+      dateOfBirth: "",
+      address: "",
+      education: "",
+      skills: "",
+      experience: "",
+      photoUrl: "",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    this.profiles.set(defaultProfile.id, defaultProfile);
   }
 
   // Student Profile Methods

@@ -32,10 +32,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Student Profile Routes
   app.get("/api/profile", async (req, res) => {
     try {
-      const profile = await storage.getDefaultProfile();
+      let profile = await storage.getDefaultProfile();
+      
+      // Always ensure a profile exists
       if (!profile) {
-        return res.status(404).json({ error: "Profile not found" });
+        profile = await storage.createProfile({
+          fullName: "",
+          email: "",
+          phone: "",
+          dateOfBirth: "",
+          address: "",
+          education: "",
+          skills: "",
+          experience: "",
+          photoUrl: "",
+        });
       }
+      
       res.json(profile);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch profile" });
@@ -47,14 +60,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const data = insertStudentProfileSchema.parse(req.body);
       const profile = await storage.createProfile(data);
       res.status(201).json(profile);
-    } catch (error) {
-      res.status(400).json({ error: "Invalid profile data" });
+    } catch (error: any) {
+      const message = error?.message || "Invalid profile data";
+      res.status(400).json({ error: message });
     }
   });
 
   app.patch("/api/profile/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      // Partial validation - allow any subset of profile fields
       const updates = req.body;
       const profile = await storage.updateProfile(id, updates);
       res.json(profile);
@@ -62,7 +77,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error.message === "Profile not found") {
         return res.status(404).json({ error: "Profile not found" });
       }
-      res.status(400).json({ error: "Failed to update profile" });
+      const message = error?.message || "Failed to update profile";
+      res.status(400).json({ error: message });
     }
   });
 
@@ -101,8 +117,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const document = await storage.createDocument(docData);
       res.status(201).json(document);
-    } catch (error) {
-      res.status(400).json({ error: "Failed to upload document" });
+    } catch (error: any) {
+      const message = error?.message || "Failed to upload document";
+      console.error("Document upload error:", error);
+      res.status(400).json({ error: message });
     }
   });
 
@@ -263,6 +281,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI-Powered Form Auto-Fill Suggestions
   app.post("/api/ai/form-suggestions", async (req, res) => {
     try {
+      // Check if OpenAI API key is configured
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(503).json({
+          error: "AI service is not configured. Please add OPENAI_API_KEY to environment variables.",
+        });
+      }
+
       const { profileData, formFields } = req.body;
 
       if (!profileData || !formFields) {
@@ -307,9 +332,10 @@ Example response format:
 
       const suggestions = JSON.parse(completion.choices[0].message.content || "{}");
       res.json({ suggestions });
-    } catch (error) {
+    } catch (error: any) {
       console.error("AI form suggestions error:", error);
-      res.status(500).json({ error: "Failed to generate form suggestions" });
+      const message = error?.message || "Failed to generate form suggestions";
+      res.status(500).json({ error: message });
     }
   });
 

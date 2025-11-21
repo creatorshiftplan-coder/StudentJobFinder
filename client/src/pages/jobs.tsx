@@ -2,9 +2,8 @@ import { useState } from "react";
 import { JobCard } from "@/components/JobCard";
 import { EmptyState } from "@/components/EmptyState";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Search, Filter, Briefcase } from "lucide-react";
+import { Search, Filter, Briefcase, Loader2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -12,64 +11,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import emptyJobsImage from "@assets/generated_images/empty_jobs_illustration.png";
+import { useQuery } from "@tanstack/react-query";
+import type { Job } from "@shared/schema";
 
 export default function Jobs() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
 
-  const jobs = [
-    {
-      id: "1",
-      title: "Software Engineer",
-      company: "Tech Solutions Ltd",
-      location: "Bangalore, India",
-      type: "Full-time",
-      deadline: "2025-11-28",
-      description: "We are seeking a talented Software Engineer to join our team. You will work on cutting-edge projects using modern technologies.",
-      salary: "₹8-12 LPA",
-      applied: false,
+  const { data: jobs = [], isLoading } = useQuery<Job[]>({
+    queryKey: ["/api/jobs", searchQuery, filterType],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (searchQuery) params.append("query", searchQuery);
+      if (filterType !== "all") params.append("type", filterType);
+      
+      const response = await fetch(`/api/jobs?${params.toString()}`);
+      if (!response.ok) throw new Error("Failed to fetch jobs");
+      return response.json();
     },
-    {
-      id: "2",
-      title: "Data Analyst",
-      company: "Analytics Corp",
-      location: "Hyderabad, India",
-      type: "Full-time",
-      deadline: "2025-12-05",
-      description: "Looking for a skilled Data Analyst to help us make data-driven decisions. Experience with Python and SQL required.",
-      salary: "₹6-9 LPA",
-      applied: true,
-    },
-    {
-      id: "3",
-      title: "Frontend Developer",
-      company: "WebDev Studios",
-      location: "Mumbai, India",
-      type: "Contract",
-      deadline: "2025-12-10",
-      description: "Join our creative team to build beautiful and responsive web applications. React and TypeScript expertise needed.",
-      salary: "₹7-10 LPA",
-      applied: false,
-    },
-    {
-      id: "4",
-      title: "Junior Backend Developer",
-      company: "Cloud Systems",
-      location: "Pune, India",
-      type: "Full-time",
-      deadline: "2025-12-15",
-      description: "Great opportunity for fresh graduates. Work with Node.js, databases, and cloud technologies.",
-      salary: "₹5-7 LPA",
-      applied: false,
-    },
-  ];
-
-  const filteredJobs = jobs.filter((job) => {
-    const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         job.company.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = filterType === "all" || job.type === filterType;
-    return matchesSearch && matchesType;
   });
 
   return (
@@ -107,7 +66,11 @@ export default function Jobs() {
         </div>
       </Card>
 
-      {filteredJobs.length === 0 ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : jobs.length === 0 ? (
         <Card className="p-6">
           <EmptyState
             title="No jobs found"
@@ -117,7 +80,7 @@ export default function Jobs() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredJobs.map((job) => (
+          {jobs.map((job) => (
             <JobCard
               key={job.id}
               job={job}

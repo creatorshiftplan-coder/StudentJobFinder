@@ -1,49 +1,38 @@
-import { useState } from "react";
 import { ApplicationCard } from "@/components/ApplicationCard";
 import { EmptyState } from "@/components/EmptyState";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import type { Application, StudentProfile } from "@shared/schema";
 
 export default function Applications() {
-  const [applications] = useState([
-    {
-      id: "1",
-      jobTitle: "Software Engineer",
-      company: "Tech Solutions Ltd",
-      appliedDate: "2025-11-18",
-      status: "shortlisted" as const,
-      deadline: "2025-12-25",
-      admitCardUrl: "#",
+  const { data: profile } = useQuery<StudentProfile>({
+    queryKey: ["/api/profile"],
+  });
+
+  const { data: applications = [], isLoading } = useQuery<Application[]>({
+    queryKey: ["/api/applications", profile?.id],
+    enabled: !!profile?.id,
+    queryFn: async () => {
+      const response = await fetch(`/api/applications/${profile!.id}`);
+      if (!response.ok) throw new Error("Failed to fetch applications");
+      return response.json();
     },
-    {
-      id: "2",
-      jobTitle: "Data Analyst",
-      company: "Analytics Corp",
-      appliedDate: "2025-11-15",
-      status: "pending" as const,
-    },
-    {
-      id: "3",
-      jobTitle: "Frontend Developer",
-      company: "WebDev Studios",
-      appliedDate: "2025-11-10",
-      status: "rejected" as const,
-    },
-    {
-      id: "4",
-      jobTitle: "Backend Developer",
-      company: "Cloud Systems",
-      appliedDate: "2025-11-05",
-      status: "selected" as const,
-      resultUrl: "#",
-    },
-  ]);
+  });
 
   const filterByStatus = (status: string) => {
     if (status === "all") return applications;
     return applications.filter((app) => app.status === status);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
