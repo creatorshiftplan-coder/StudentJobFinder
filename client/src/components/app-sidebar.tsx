@@ -4,7 +4,6 @@ import {
   FileText, 
   PenTool, 
   Camera, 
-  Briefcase, 
   ClipboardList,
   LogOut
 } from "lucide-react";
@@ -49,11 +48,6 @@ const menuItems = [
     title: "Photo",
     url: "/photo",
     icon: Camera,
-  },
-  {
-    title: "Jobs",
-    url: "/jobs",
-    icon: Briefcase,
   },
   {
     title: "Applications",
