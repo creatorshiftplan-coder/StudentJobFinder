@@ -3,7 +3,8 @@ import { JobCard } from "@/components/JobCard";
 import { EmptyState } from "@/components/EmptyState";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Search, Filter, Briefcase, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, Filter, Briefcase, Loader2, RefreshCw } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -11,10 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import type { Job } from "@shared/schema";
 
 export default function Jobs() {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
 
@@ -28,6 +32,30 @@ export default function Jobs() {
       const response = await fetch(`/api/jobs?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to fetch jobs");
       return response.json();
+    },
+  });
+
+  const scrapeMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/jobs/scrape-official", {
+        method: "POST",
+      });
+      if (!response.ok) throw new Error("Failed to scrape jobs");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/jobs"] });
+      toast({
+        title: "Success",
+        description: `Found and added ${data.count} new jobs from official government sources`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to scrape jobs. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -63,6 +91,20 @@ export default function Jobs() {
               <SelectItem value="Internship">Internship</SelectItem>
             </SelectContent>
           </Select>
+          <Button
+            onClick={() => scrapeMutation.mutate()}
+            disabled={scrapeMutation.isPending || isLoading}
+            variant="outline"
+            data-testid="button-refresh-jobs"
+            title="Refresh jobs from official government sources"
+          >
+            {scrapeMutation.isPending ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4 mr-2" />
+            )}
+            {scrapeMutation.isPending ? "Refreshing..." : "Refresh"}
+          </Button>
         </div>
       </Card>
 
