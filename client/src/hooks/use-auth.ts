@@ -12,9 +12,11 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   accessToken: string | null;
+  signupMessage: string | null;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  clearSignupMessage: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,15 +29,50 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [signupMessage, setSignupMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem("accessToken");
-    const storedEmail = localStorage.getItem("userEmail");
-    if (stored && storedEmail) {
-      setAccessToken(stored);
-      setUser({ id: stored.substring(0, 20), email: storedEmail });
-    }
-    setLoading(false);
+    const initializeAuth = async () => {
+      try {
+        const stored = localStorage.getItem("accessToken");
+        const storedEmail = localStorage.getItem("userEmail");
+        const storedUserId = localStorage.getItem("userId");
+        
+        if (stored && storedEmail && storedUserId) {
+          // Validate token with Supabase
+          const validateResponse = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+            headers: {
+              "Authorization": `Bearer ${stored}`,
+              "apikey": SUPABASE_ANON_KEY,
+            },
+          });
+
+          if (validateResponse.ok) {
+            const userData = await validateResponse.json();
+            if (userData && userData.id) {
+              setAccessToken(stored);
+              setUser({ id: userData.id, email: userData.email });
+            } else {
+              // Invalid token, clear storage
+              localStorage.removeItem("accessToken");
+              localStorage.removeItem("userEmail");
+              localStorage.removeItem("userId");
+            }
+          } else {
+            // Token validation failed, clear storage
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("userEmail");
+            localStorage.removeItem("userId");
+          }
+        }
+      } catch (error) {
+        console.error("Auth initialization error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -50,7 +87,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error_description || error.error || error.msg || "Login failed");
+      const errorMsg = error.error_description || error.error || error.msg || "Login failed";
+      
+      // Check if email is not confirmed
+      if (errorMsg.includes("Email not confirmed") || errorMsg.includes("invalid_credentials")) {
+        throw new Error("Email not confirmed or invalid credentials. Please check your email for confirmation link.");
+      }
+      throw new Error(errorMsg);
     }
 
     const data = await response.json();
@@ -65,11 +108,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (!authUser || !authUser.id) {
       throw new Error("Login failed - invalid user data");
     }
+
+    // Check if email is confirmed
+    if (!authUser.email_confirmed_at) {
+      throw new Error("Please confirm your email before logging in. Check your inbox for the confirmation link.");
+    }
     
     setUser({ id: authUser.id, email: authUser.email });
     setAccessToken(token);
     localStorage.setItem("accessToken", token);
     localStorage.setItem("userEmail", authUser.email);
+    localStorage.setItem("userId", authUser.id);
+    setSignupMessage(null);
   };
 
   const signup = async (email: string, password: string) => {
@@ -104,14 +154,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
       throw new Error("Signup failed - invalid response");
     }
 
-    // For signup, we just set a temporary token and user
-    // User will need to login with the credentials they just created
-    const tempToken = `temp_${signupData.id}`;
+    // Do NOT log user in after signup
+    // User must confirm their email first
+    // Clear any existing auth state
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userId");
+    setUser(null);
+    setAccessToken(null);
     
-    setUser({ id: signupData.id, email: signupData.email });
-    setAccessToken(tempToken);
-    localStorage.setItem("accessToken", tempToken);
-    localStorage.setItem("userEmail", signupData.email);
+    // Show message to check email
+    const message = `Account created! We've sent a confirmation link to ${email}. Please check your email to confirm your account before logging in.`;
+    setSignupMessage(message);
+  };
+
+  const clearSignupMessage = () => {
+    setSignupMessage(null);
   };
 
   const logout = () => {
@@ -119,15 +177,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setAccessToken(null);
     localStorage.removeItem("accessToken");
     localStorage.removeItem("userEmail");
+    localStorage.removeItem("userId");
+    setSignupMessage(null);
   };
 
   const value: AuthContextType = {
     user,
     loading,
     accessToken,
+    signupMessage,
     login,
     signup,
     logout,
+    clearSignupMessage,
   };
 
   return createElement(AuthContext.Provider, { value }, children);
