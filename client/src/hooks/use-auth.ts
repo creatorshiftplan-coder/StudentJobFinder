@@ -50,10 +50,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error_description || error.error || "Login failed");
+      console.error("Login error:", error);
+      throw new Error(error.error_description || error.error || error.msg || "Login failed");
     }
 
     const data = await response.json();
+    console.log("Login response:", data);
+    
+    if (!data.user || !data.access_token) {
+      throw new Error("Invalid login response - missing user or access token");
+    }
+
     const token = data.access_token;
     const authUser = data.user;
     
@@ -75,10 +82,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error_description || error.error || "Signup failed");
+      console.error("Signup error:", error);
+      throw new Error(error.error_description || error.error || error.msg || "Signup failed");
     }
 
     const data = await response.json();
+    console.log("Signup response:", data);
+    
+    if (!data.user || !data.access_token) {
+      throw new Error("Invalid signup response - missing user or access token");
+    }
+
     const token = data.access_token;
     const authUser = data.user;
     
