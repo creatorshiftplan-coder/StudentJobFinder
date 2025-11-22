@@ -50,19 +50,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     if (!response.ok) {
       const error = await response.json();
-      console.error("Login error:", error);
       throw new Error(error.error_description || error.error || error.msg || "Login failed");
     }
 
     const data = await response.json();
-    console.log("Login response:", data);
     
-    if (!data.user || !data.access_token) {
-      throw new Error("Invalid login response - missing user or access token");
+    if (!data.access_token) {
+      throw new Error("Login failed - no access token received");
     }
 
     const token = data.access_token;
     const authUser = data.user;
+    
+    if (!authUser || !authUser.id) {
+      throw new Error("Login failed - invalid user data");
+    }
     
     setUser({ id: authUser.id, email: authUser.email });
     setAccessToken(token);
@@ -71,7 +73,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const signup = async (email: string, password: string) => {
-    const response = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+    const signupResponse = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -80,21 +82,44 @@ export function AuthProvider({ children }: AuthProviderProps) {
       body: JSON.stringify({ email, password }),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      console.error("Signup error:", error);
+    if (!signupResponse.ok) {
+      const error = await signupResponse.json();
       throw new Error(error.error_description || error.error || error.msg || "Signup failed");
     }
 
-    const data = await response.json();
-    console.log("Signup response:", data);
+    const signupData = await signupResponse.json();
     
-    if (!data.user || !data.access_token) {
-      throw new Error("Invalid signup response - missing user or access token");
+    if (!signupData.id || !signupData.email) {
+      throw new Error("Signup failed - invalid response");
     }
 
-    const token = data.access_token;
-    const authUser = data.user;
+    // After signup, automatically log in to get access token
+    const loginResponse = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!loginResponse.ok) {
+      const error = await loginResponse.json();
+      throw new Error(error.error_description || error.error || error.msg || "Login after signup failed");
+    }
+
+    const loginData = await loginResponse.json();
+    
+    if (!loginData.access_token) {
+      throw new Error("Signup succeeded but could not get access token");
+    }
+
+    const token = loginData.access_token;
+    const authUser = loginData.user;
+    
+    if (!authUser || !authUser.id) {
+      throw new Error("Invalid user data after signup");
+    }
     
     setUser({ id: authUser.id, email: authUser.email });
     setAccessToken(token);
