@@ -73,13 +73,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const signup = async (email: string, password: string) => {
+    // Get the current domain for redirect URL
+    const redirectUrl = typeof window !== "undefined" 
+      ? `${window.location.origin}/` 
+      : "http://localhost:5000/";
+
     const signupResponse = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         apikey: SUPABASE_ANON_KEY,
       },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ 
+        email, 
+        password,
+        options: {
+          emailRedirectTo: redirectUrl
+        }
+      }),
     });
 
     if (!signupResponse.ok) {
