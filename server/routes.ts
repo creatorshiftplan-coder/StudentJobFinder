@@ -5,6 +5,7 @@ import multer from "multer";
 import sharp from "sharp";
 import { OpenAI } from "openai";
 import { updateJobsFromOfficialSources } from "./scrapers";
+import { extractDataFromDocument } from "./ocr";
 import {
   insertStudentProfileSchema,
   insertDocumentSchema,
@@ -136,6 +137,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       res.status(500).json({ error: "Failed to delete document" });
+    }
+  });
+
+  // OCR Extraction Route
+  app.post("/api/documents/extract-ocr", async (req, res) => {
+    try {
+      const { imageUrl } = req.body;
+      if (!imageUrl) {
+        return res.status(400).json({ error: "Image URL is required" });
+      }
+
+      console.log("Starting OCR extraction...");
+      const extractedData = await extractDataFromDocument(imageUrl);
+      console.log("OCR extraction completed:", extractedData);
+      
+      res.json({ success: true, data: extractedData });
+    } catch (error: any) {
+      console.error("OCR extraction error:", error);
+      res.status(500).json({ 
+        error: "Failed to extract data from document",
+        details: error?.message 
+      });
     }
   });
 
