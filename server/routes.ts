@@ -6,6 +6,7 @@ import { startJobScheduler } from "./job-scheduler";
 import { getSupabase, isSupabaseEnabled } from "./supabase";
 import { authMiddleware, optionalAuthMiddleware, AuthRequest } from "./auth-middleware";
 import { SupabaseStorage } from "./supabase-storage";
+import { testAllEdgeFunctions } from "./test-edge-functions";
 import multer from "multer";
 import sharp from "sharp";
 import { OpenAI } from "openai";
@@ -97,6 +98,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Apply optional auth to all API endpoints
   app.use("/api", optionalAuthMiddleware);
+
+  // Test Edge Functions Route
+  app.get("/api/test/edge-functions", async (req, res) => {
+    try {
+      console.log("[API] Testing all edge functions...");
+      const results = await testAllEdgeFunctions();
+      res.json({
+        timestamp: new Date().toISOString(),
+        supabaseEnabled: isSupabaseEnabled(),
+        results,
+        summary: {
+          total: results.length,
+          working: results.filter(r => r.status === "✅ WORKING").length,
+          errors: results.filter(r => r.status === "❌ ERROR").length,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Test failed" });
+    }
+  });
 
   // Cache Routes
   app.get("/api/cache/jobs", async (req, res) => {
