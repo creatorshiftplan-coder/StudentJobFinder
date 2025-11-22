@@ -38,10 +38,7 @@ export function AuthProvider(props: { children: ReactNode }) {
     const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email,
-        password,
-      }),
+      body: JSON.stringify({ email, password }),
     });
 
     if (!response.ok) {
@@ -60,10 +57,7 @@ export function AuthProvider(props: { children: ReactNode }) {
     const response = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email,
-        password,
-      }),
+      body: JSON.stringify({ email, password }),
     });
 
     if (!response.ok) {
@@ -85,10 +79,10 @@ export function AuthProvider(props: { children: ReactNode }) {
     localStorage.removeItem("userEmail");
   };
 
+  const ctxValue = { user, loading, accessToken, login, signup, logout };
+
   return (
-    <AuthContext.Provider
-      value={{ user, loading, accessToken, login, signup, logout }}
-    >
+    <AuthContext.Provider value={ctxValue}>
       {props.children}
     </AuthContext.Provider>
   );
