@@ -9,6 +9,8 @@ import {
   type InsertJob,
   type Application,
   type InsertApplication,
+  type Exam,
+  type InsertExam,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -40,6 +42,11 @@ export interface IStorage {
   getApplicationsByStudent(studentId: string): Promise<Application[]>;
   createApplication(app: InsertApplication): Promise<Application>;
   updateApplication(id: string, app: Partial<InsertApplication>): Promise<Application>;
+
+  // Exams
+  getExam(id: string): Promise<Exam | undefined>;
+  getExamsByStudent(studentId: string): Promise<Exam[]>;
+  createExam(exam: InsertExam): Promise<Exam>;
 }
 
 export class MemStorage implements IStorage {
@@ -48,6 +55,7 @@ export class MemStorage implements IStorage {
   private signatures: Map<string, Signature>;
   private jobs: Map<string, Job>;
   private applications: Map<string, Application>;
+  private exams: Map<string, Exam>;
 
   constructor() {
     this.profiles = new Map();
@@ -55,6 +63,7 @@ export class MemStorage implements IStorage {
     this.signatures = new Map();
     this.jobs = new Map();
     this.applications = new Map();
+    this.exams = new Map();
     
     // Seed a default profile for MVP
     this.seedDefaultProfile();
@@ -232,6 +241,28 @@ export class MemStorage implements IStorage {
     };
     this.applications.set(id, updated);
     return updated;
+  }
+
+  // Exam Methods
+  async getExam(id: string): Promise<Exam | undefined> {
+    return this.exams.get(id);
+  }
+
+  async getExamsByStudent(studentId: string): Promise<Exam[]> {
+    return Array.from(this.exams.values()).filter(
+      (exam) => exam.studentId === studentId
+    );
+  }
+
+  async createExam(insertExam: InsertExam): Promise<Exam> {
+    const id = randomUUID();
+    const exam: Exam = {
+      ...insertExam,
+      id,
+      createdAt: new Date().toISOString(),
+    } as Exam;
+    this.exams.set(id, exam);
+    return exam;
   }
 }
 

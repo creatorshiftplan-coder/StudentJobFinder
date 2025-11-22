@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ClipboardList, Briefcase, Loader2, Plus, Calendar } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import type { Application, StudentProfile, Job } from "@shared/schema";
+import type { Application, StudentProfile, Job, Exam } from "@shared/schema";
 
 export default function Applications() {
   const [activeSection, setActiveSection] = useState<"applications" | "listings">("applications");
@@ -51,9 +51,25 @@ export default function Applications() {
     },
   });
 
+  const { data: exams = [], isLoading: examsLoading } = useQuery<Exam[]>({
+    queryKey: ["/api/exams", profile?.id],
+    enabled: !!profile?.id,
+    queryFn: async () => {
+      const response = await fetch(`/api/exams/${profile!.id}`);
+      if (!response.ok) throw new Error("Failed to fetch exams");
+      return response.json();
+    },
+  });
+
+  // Combine applications and exams into one list
+  const combinedItems = [
+    ...applications.map(app => ({ ...app, type: "application" as const })),
+    ...exams.map(exam => ({ ...exam, type: "exam" as const })),
+  ];
+
   const filterByStatus = (status: string) => {
-    if (status === "all") return applications;
-    return applications.filter((app) => app.status === status);
+    if (status === "all") return combinedItems;
+    return combinedItems.filter((item) => item.status === status);
   };
 
   const appliedJobIds = new Set(applications.map((app) => app.jobId));
@@ -64,7 +80,7 @@ export default function Applications() {
     applicationStatus: applications.find((app) => app.jobId === job.id)?.status,
   }));
 
-  const isLoading = applicationsLoading || jobsLoading;
+  const isLoading = applicationsLoading || jobsLoading || examsLoading;
 
   if (isLoading) {
     return (
@@ -76,7 +92,7 @@ export default function Applications() {
 
   const filteredApplications = filterByStatus(statusFilter);
   const statusLabels: Record<string, string> = {
-    all: `All (${applications.length})`,
+    all: `All (${combinedItems.length})`,
     pending: `Pending (${filterByStatus("pending").length})`,
     applied: `Applied (${filterByStatus("applied").length})`,
     admit_card_released: `Admit Card (${filterByStatus("admit_card_released").length})`,
@@ -109,6 +125,8 @@ export default function Applications() {
       toast({ title: "Success", description: "Exam added successfully!" });
       setExamData({ jobTitle: "", company: "", examDate: "", examTime: "", status: "pending" });
       setIsExamDialogOpen(false);
+      // Refresh exams query
+      window.location.reload();
     } catch (error) {
       toast({ title: "Error", description: "Failed to add exam", variant: "destructive" });
     }
@@ -269,19 +287,45 @@ export default function Applications() {
           {filteredApplications.length === 0 ? (
             <Card className="p-6">
               <EmptyState
-                title={`No ${statusFilter === "all" ? "" : statusFilter.replace(/_/g, " ")} applications`}
-                description="You have no applications in this status"
+                title={`No ${statusFilter === "all" ? "" : statusFilter.replace(/_/g, " ")} applications or exams`}
+                description="You have no applications or exams in this status"
                 icon={ClipboardList}
               />
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {filteredApplications.map((app) => (
-                <ApplicationCard
-                  key={app.id}
-                  application={app}
-                  onViewDetails={(id) => console.log('View details:', id)}
-                />
+              {filteredApplications.map((item) => (
+                item.type === "application" ? (
+                  <ApplicationCard
+                    key={item.id}
+                    application={item as Application}
+                    onViewDetails={(id) => console.log('View details:', id)}
+                  />
+                ) : (
+                  <Card key={item.id} className="p-6 hover-elevate">
+                    <div className="space-y-3">
+                      <div>
+                        <h3 className="text-lg font-semibold">{(item as Exam).jobTitle}</h3>
+                        <p className="text-sm text-muted-foreground">{(item as Exam).company}</p>
+                      </div>
+                      <div className="space-y-2">
+                        {(item as Exam).examDate && (
+                          <p className="text-sm">
+                            <span className="font-medium">Date:</span> {(item as Exam).examDate}
+                          </p>
+                        )}
+                        {(item as Exam).examTime && (
+                          <p className="text-sm">
+                            <span className="font-medium">Time:</span> {(item as Exam).examTime}
+                          </p>
+                        )}
+                        <p className="text-sm">
+                          <span className="font-medium">Status:</span> <span className="capitalize">{(item as Exam).status.replace(/_/g, " ")}</span>
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                )
               ))}
             </div>
           )}

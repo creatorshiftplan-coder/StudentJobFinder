@@ -18,6 +18,7 @@ import {
   insertSignatureSchema,
   insertJobSchema,
   insertApplicationSchema,
+  insertExamSchema,
 } from "@shared/schema";
 
 // Configure multer for file uploads
@@ -435,6 +436,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Application not found" });
       }
       res.status(400).json({ error: "Failed to update application" });
+    }
+  });
+
+  // Exam Routes
+  app.get("/api/exams/:studentId", async (req, res) => {
+    try {
+      const { studentId } = req.params;
+      const exams = await storage.getExamsByStudent(studentId);
+      res.json(exams);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch exams" });
+    }
+  });
+
+  app.post("/api/exams", async (req, res) => {
+    try {
+      const profile = await storage.getDefaultProfile();
+      if (!profile) {
+        return res.status(400).json({ error: "Student profile not found" });
+      }
+      
+      const data = insertExamSchema.parse({
+        ...req.body,
+        studentId: profile.id,
+      });
+      const exam = await storage.createExam(data);
+      res.status(201).json(exam);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message || "Failed to create exam" });
     }
   });
 
