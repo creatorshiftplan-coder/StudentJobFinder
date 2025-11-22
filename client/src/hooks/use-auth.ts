@@ -124,9 +124,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signup = async (email: string, password: string) => {
     // Get the current domain for redirect URL
-    const redirectUrl = typeof window !== "undefined" 
-      ? `${window.location.origin}/` 
-      : "http://localhost:5000/";
+    // For Replit preview/deployment: uses window.location.origin automatically
+    const getRedirectUrl = () => {
+      if (typeof window === "undefined") {
+        return "http://localhost:5000/";
+      }
+      
+      const origin = window.location.origin;
+      
+      // Handle Replit preview URLs and production URLs
+      if (origin.includes(".replit.dev") || origin.includes("replit.app")) {
+        // For Replit environments, use the full origin
+        return origin + "/";
+      }
+      
+      // For localhost development
+      return origin + "/";
+    };
+
+    const redirectUrl = getRedirectUrl();
 
     const signupResponse = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
       method: "POST",
@@ -138,7 +154,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         email, 
         password,
         options: {
-          emailRedirectTo: redirectUrl
+          redirect_to: redirectUrl
         }
       }),
     });
