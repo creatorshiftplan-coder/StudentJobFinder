@@ -1,4 +1,4 @@
-import { useState, useContext, createContext, useEffect, ReactNode } from "react";
+import { useState, useContext, createContext, useEffect, type ReactNode } from "react";
 
 interface User {
   id: string;
@@ -22,13 +22,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load from localStorage on mount
     const stored = localStorage.getItem("accessToken");
     if (stored) {
       setAccessToken(stored);
-      // Try to fetch user profile to verify token
       fetch("/api/profile", {
-        headers: { "Authorization": `Bearer ${stored}` },
+        headers: { Authorization: `Bearer ${stored}` },
       })
         .then((res) => res.json())
         .then((profile) => {
