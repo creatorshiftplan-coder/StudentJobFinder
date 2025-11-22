@@ -1,6 +1,5 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
 import { jobCache } from "./cache";
 import { startJobScheduler } from "./job-scheduler";
 import { getSupabase, isSupabaseEnabled } from "./supabase";
@@ -42,15 +41,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Uncomment line below to use local scheduler
   // startJobScheduler();
 
-  // Get storage instance based on configuration
+  // Get storage instance - ALWAYS use Supabase (no local fallback)
   function getStorage(req: AuthRequest) {
-    if (isSupabaseEnabled() && req.userId) {
-      const supabase = getSupabase();
-      if (supabase) {
-        return new SupabaseStorage(supabase, req.userId);
-      }
+    const supabase = getSupabase();
+    if (!supabase) {
+      throw new Error("Supabase not configured - cannot access storage");
     }
-    return storage;
+    if (!req.userId) {
+      throw new Error("User ID not found - authentication required");
+    }
+    return new SupabaseStorage(supabase, req.userId);
   }
 
   // Auth endpoints
@@ -210,7 +210,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/documents/:studentId", async (req, res) => {
     try {
       const { studentId } = req.params;
-      const documents = await storage.getDocumentsByStudent(studentId);
+      const documents = await getStorage(req).getDocumentsByStudent(studentId);
       res.json(documents);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch documents" });
@@ -239,7 +239,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         url: dataUrl,
       });
 
-      const document = await storage.createDocument(docData);
+      const document = await getStorage(req).createDocument(docData);
       res.status(201).json(document);
     } catch (error: any) {
       const message = error?.message || "Failed to upload document";
@@ -251,7 +251,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/documents/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      const deleted = await storage.deleteDocument(id);
+      const deleted = await getStorage(req).deleteDocument(id);
       if (deleted) {
         res.status(204).send();
       } else {
@@ -288,7 +288,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/signature/:studentId", async (req, res) => {
     try {
       const { studentId } = req.params;
-      const signature = await storage.getSignature(studentId);
+      const signature = await getStorage(req).getSignature(studentId);
       if (!signature) {
         return res.status(404).json({ error: "Signature not found" });
       }
@@ -301,7 +301,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/signature", async (req, res) => {
     try {
       const data = insertSignatureSchema.parse(req.body);
-      const signature = await storage.saveSignature(data);
+      const signature = await getStorage(req).saveSignature(data);
       res.status(201).json(signature);
     } catch (error) {
       res.status(400).json({ error: "Failed to save signature" });
@@ -356,7 +356,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/jobs", async (req, res) => {
     try {
       const { query = "", type, category } = req.query;
-      const jobs = await storage.searchJobs(
+      const jobs = await getStorage(req).searchJobs(
         query as string,
         type as string | undefined,
         category as string | undefined
@@ -384,7 +384,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/jobs/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      const job = await storage.getJob(id);
+      const job = await getStorage(req).getJob(id);
       if (!job) {
         return res.status(404).json({ error: "Job not found" });
       }
@@ -397,7 +397,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/jobs", async (req, res) => {
     try {
       const data = insertJobSchema.parse(req.body);
-      const job = await storage.createJob(data);
+      const job = await getStorage(req).createJob(data);
       res.status(201).json(job);
     } catch (error) {
       res.status(400).json({ error: "Failed to create job" });
@@ -408,7 +408,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/applications/:studentId", async (req, res) => {
     try {
       const { studentId } = req.params;
-      const applications = await storage.getApplicationsByStudent(studentId);
+      const applications = await getStorage(req).getApplicationsByStudent(studentId);
       res.json(applications);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch applications" });
@@ -418,7 +418,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/applications", async (req, res) => {
     try {
       const data = insertApplicationSchema.parse(req.body);
-      const application = await storage.createApplication(data);
+      const application = await getStorage(req).createApplication(data);
       res.status(201).json(application);
     } catch (error) {
       res.status(400).json({ error: "Failed to create application" });
@@ -429,7 +429,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const updates = req.body;
-      const application = await storage.updateApplication(id, updates);
+      const application = await getStorage(req).updateApplication(id, updates);
       res.json(application);
     } catch (error: any) {
       if (error.message === "Application not found") {
@@ -443,7 +443,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/exams/:studentId", async (req, res) => {
     try {
       const { studentId } = req.params;
-      const exams = await storage.getExamsByStudent(studentId);
+      const exams = await getStorage(req).getExamsByStudent(studentId);
       res.json(exams);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch exams" });
@@ -452,7 +452,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/exams", async (req, res) => {
     try {
-      const profile = await storage.getDefaultProfile();
+      const profile = await getStorage(req).getDefaultProfile();
       if (!profile) {
         return res.status(400).json({ error: "Student profile not found" });
       }
@@ -462,7 +462,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ...req.body,
           studentId: profile.id,
         });
-        const exam = await storage.createExam(data);
+        const exam = await getStorage(req).createExam(data);
         res.status(201).json(exam);
       } catch (validationError: any) {
         console.error("[Exam Validation Error]", validationError.errors);
@@ -541,9 +541,9 @@ Example response format:
   // Seed some initial job data for testing
   const seedJobs = async () => {
     try {
-      const existingJobs = await storage.getAllJobs();
+      const existingJobs = await getStorage(req).getAllJobs();
       if (existingJobs.length === 0) {
-        await storage.createJob({
+        await getStorage(req).createJob({
           title: "Software Engineer",
           company: "Tech Solutions Ltd",
           location: "Bangalore, India",
@@ -554,7 +554,7 @@ Example response format:
           salary: "₹8-12 LPA",
         });
 
-        await storage.createJob({
+        await getStorage(req).createJob({
           title: "Data Analyst",
           company: "Analytics Corp",
           location: "Hyderabad, India",
@@ -565,7 +565,7 @@ Example response format:
           salary: "₹6-9 LPA",
         });
 
-        await storage.createJob({
+        await getStorage(req).createJob({
           title: "Frontend Developer",
           company: "WebDev Studios",
           location: "Mumbai, India",
