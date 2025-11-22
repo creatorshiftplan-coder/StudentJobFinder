@@ -3,6 +3,9 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { jobCache } from "./cache";
 import { startJobScheduler } from "./job-scheduler";
+import { getSupabase, isSupabaseEnabled } from "./supabase";
+import { authMiddleware, optionalAuthMiddleware, AuthRequest } from "./auth-middleware";
+import { SupabaseStorage } from "./supabase-storage";
 import multer from "multer";
 import sharp from "sharp";
 import { OpenAI } from "openai";
@@ -36,6 +39,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Start the background job scheduler
   startJobScheduler();
 
+  // Get storage instance based on configuration
+  function getStorage(req: AuthRequest) {
+    if (isSupabaseEnabled() && req.userId) {
+      const supabase = getSupabase();
+      if (supabase) {
+        return new SupabaseStorage(supabase, req.userId);
+      }
+    }
+    return storage;
+  }
+
+  // Auth endpoints
+  app.post("/api/auth/signup", async (req, res) => {
+    const supabase = getSupabase();
+    if (!supabase) {
+      return res.status(400).json({ error: "Authentication not configured" });
+    }
+
+    try {
+      const { email, password } = req.body;
+      const { data, error } = await supabase.auth.signUpWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+      res.json({ user: data.user, session: data.session });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/auth/login", async (req, res) => {
+    const supabase = getSupabase();
+    if (!supabase) {
+      return res.status(400).json({ error: "Authentication not configured" });
+    }
+
+    try {
+      const { email, password } = req.body;
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+      res.json({ user: data.user, session: data.session });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/auth/logout", async (req, res) => {
+    res.json({ message: "Logged out" });
+  });
+
+  // Apply optional auth to all API endpoints
+  app.use("/api", optionalAuthMiddleware);
+
   // Cache Routes
   app.get("/api/cache/jobs", async (req, res) => {
     try {
@@ -65,13 +127,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Student Profile Routes
-  app.get("/api/profile", async (req, res) => {
+  app.get("/api/profile", async (req: AuthRequest, res) => {
     try {
-      let profile = await storage.getDefaultProfile();
+      const currentStorage = getStorage(req);
+      let profile = await currentStorage.getDefaultProfile();
       
       // Always ensure a profile exists
       if (!profile) {
-        profile = await storage.createProfile({
+        const currentStorage = getStorage(req);
+        profile = await currentStorage.createProfile({
           fullName: "",
           email: "",
           phone: "",
@@ -90,10 +154,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/profile", async (req, res) => {
+  app.post("/api/profile", async (req: AuthRequest, res) => {
     try {
       const data = insertStudentProfileSchema.parse(req.body);
-      const profile = await storage.createProfile(data);
+      const currentStorage = getStorage(req);
+      const profile = await currentStorage.createProfile(data);
       res.status(201).json(profile);
     } catch (error: any) {
       const message = error?.message || "Invalid profile data";
@@ -101,12 +166,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/profile/:id", async (req, res) => {
+  app.patch("/api/profile/:id", async (req: AuthRequest, res) => {
     try {
       const { id } = req.params;
       // Partial validation - allow any subset of profile fields
       const updates = req.body;
-      const profile = await storage.updateProfile(id, updates);
+      const currentStorage = getStorage(req);
+      const profile = await currentStorage.updateProfile(id, updates);
       res.json(profile);
     } catch (error: any) {
       if (error.message === "Profile not found") {
