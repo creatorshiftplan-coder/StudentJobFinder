@@ -8,7 +8,7 @@ export interface Application {
   jobTitle: string;
   company: string;
   appliedDate: string;
-  status: "pending" | "shortlisted" | "rejected" | "selected";
+  status: "pending" | "applied" | "admit_card_released" | "result_released" | "selected" | "rejected";
   deadline?: string;
   admitCardUrl?: string;
   resultUrl?: string;
@@ -19,9 +19,11 @@ interface ApplicationCardProps {
   onViewDetails?: (id: string) => void;
 }
 
-const statusConfig = {
+const statusConfig: Record<Application['status'], { label: string; variant: 'secondary' | 'default' | 'destructive' }> = {
   pending: { label: "Pending", variant: "secondary" as const },
-  shortlisted: { label: "Shortlisted", variant: "default" as const },
+  applied: { label: "Applied", variant: "default" as const },
+  admit_card_released: { label: "Admit Card Released", variant: "default" as const },
+  result_released: { label: "Result Released", variant: "default" as const },
   rejected: { label: "Rejected", variant: "destructive" as const },
   selected: { label: "Selected", variant: "default" as const },
 };

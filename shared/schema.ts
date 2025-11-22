@@ -121,7 +121,7 @@ export interface Application {
   jobTitle: string;
   company: string;
   appliedDate: string;
-  status: "pending" | "shortlisted" | "rejected" | "selected";
+  status: "pending" | "applied" | "admit_card_released" | "result_released" | "selected" | "rejected";
   deadline?: string;
   admitCardUrl?: string;
   resultUrl?: string;
@@ -133,7 +133,7 @@ export const insertApplicationSchema = z.object({
   jobId: z.string(),
   jobTitle: z.string(),
   company: z.string(),
-  status: z.enum(["pending", "shortlisted", "rejected", "selected"]).default("pending"),
+  status: z.enum(["pending", "applied", "admit_card_released", "result_released", "selected", "rejected"]).default("pending"),
   deadline: z.string().optional(),
   admitCardUrl: z.string().optional(),
   resultUrl: z.string().optional(),
@@ -141,3 +141,12 @@ export const insertApplicationSchema = z.object({
 });
 
 export type InsertApplication = z.infer<typeof insertApplicationSchema>;
+
+export const APPLICATION_STATUSES = [
+  { value: "pending", label: "Pending", icon: "Clock" },
+  { value: "applied", label: "Applied", icon: "CheckCircle2" },
+  { value: "admit_card_released", label: "Admit Card Released", icon: "FileText" },
+  { value: "result_released", label: "Result Released", icon: "Award" },
+  { value: "selected", label: "Selected", icon: "Trophy" },
+  { value: "rejected", label: "Rejected", icon: "AlertCircle" },
+] as const;
