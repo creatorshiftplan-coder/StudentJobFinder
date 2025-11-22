@@ -1,7 +1,7 @@
 import { StatsCard } from "@/components/StatsCard";
 import { ApplicationCard } from "@/components/ApplicationCard";
 import { JobCard } from "@/components/JobCard";
-import { Briefcase, ClipboardList, CheckCircle, Clock, Loader2 } from "lucide-react";
+import { Briefcase, Clock, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import type { Application, Job, StudentProfile } from "@shared/schema";
@@ -37,18 +37,6 @@ export default function Dashboard() {
       value: applications.filter((a) => a.status === "pending").length,
       icon: Clock,
       description: "Awaiting response",
-    },
-    {
-      title: "Shortlisted",
-      value: applications.filter((a) => a.status === "shortlisted").length,
-      icon: ClipboardList,
-      description: "Interview scheduled",
-    },
-    {
-      title: "Selected",
-      value: applications.filter((a) => a.status === "selected").length,
-      icon: CheckCircle,
-      description: "Job offers",
     },
   ];
 
