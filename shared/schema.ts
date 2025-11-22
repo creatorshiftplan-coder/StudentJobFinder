@@ -172,8 +172,9 @@ export interface Exam {
   jobId?: string;
   jobTitle: string;
   company: string;
-  examDate: string;
+  examDate?: string;
   examTime?: string;
+  status: "pending" | "applied" | "admit_card_released" | "result_released" | "selected" | "rejected";
   center?: string;
   notes?: string;
   createdAt: string;
@@ -184,8 +185,9 @@ export const insertExamSchema = z.object({
   jobId: z.string().optional(),
   jobTitle: z.string().min(1, "Job title is required"),
   company: z.string().min(1, "Company name is required"),
-  examDate: z.string().min(1, "Exam date is required"),
+  examDate: z.string().optional(),
   examTime: z.string().optional(),
+  status: z.enum(["pending", "applied", "admit_card_released", "result_released", "selected", "rejected"]).default("pending"),
   center: z.string().optional(),
   notes: z.string().optional(),
 });

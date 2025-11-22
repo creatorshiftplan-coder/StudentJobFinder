@@ -16,8 +16,17 @@ export default function Applications() {
   const [activeSection, setActiveSection] = useState<"applications" | "listings">("applications");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isExamDialogOpen, setIsExamDialogOpen] = useState(false);
-  const [examData, setExamData] = useState({ jobTitle: "", company: "", examDate: "", examTime: "" });
+  const [examData, setExamData] = useState({ jobTitle: "", company: "", examDate: "", examTime: "", status: "pending" });
   const { toast } = useToast();
+
+  const examStatuses = [
+    { value: "pending", label: "Pending" },
+    { value: "applied", label: "Applied" },
+    { value: "admit_card_released", label: "Admit Card Released" },
+    { value: "result_released", label: "Result Released" },
+    { value: "selected", label: "Selected" },
+    { value: "rejected", label: "Rejected" },
+  ];
 
   const { data: profile } = useQuery<StudentProfile>({
     queryKey: ["/api/profile"],
@@ -77,8 +86,8 @@ export default function Applications() {
   };
 
   const handleAddExam = async () => {
-    if (!examData.jobTitle || !examData.company || !examData.examDate) {
-      toast({ title: "Error", description: "Please fill in all required fields", variant: "destructive" });
+    if (!examData.jobTitle || !examData.company) {
+      toast({ title: "Error", description: "Please fill in job title and company", variant: "destructive" });
       return;
     }
 
@@ -89,15 +98,16 @@ export default function Applications() {
         body: JSON.stringify({
           jobTitle: examData.jobTitle,
           company: examData.company,
-          examDate: examData.examDate,
+          examDate: examData.examDate || null,
           examTime: examData.examTime,
+          status: examData.status,
         }),
       });
 
       if (!response.ok) throw new Error("Failed to add exam");
 
       toast({ title: "Success", description: "Exam added successfully!" });
-      setExamData({ jobTitle: "", company: "", examDate: "", examTime: "" });
+      setExamData({ jobTitle: "", company: "", examDate: "", examTime: "", status: "pending" });
       setIsExamDialogOpen(false);
     } catch (error) {
       toast({ title: "Error", description: "Failed to add exam", variant: "destructive" });
@@ -212,7 +222,22 @@ export default function Applications() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Exam Date *</label>
+                    <label className="text-sm font-medium">Exam Status</label>
+                    <Select value={examData.status} onValueChange={(value) => setExamData({ ...examData, status: value as any })}>
+                      <SelectTrigger data-testid="select-exam-status" className="px-4 py-3 text-base font-semibold border-2 border-muted rounded-md">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {examStatuses.map((status) => (
+                          <SelectItem key={status.value} value={status.value} data-testid={`option-exam-${status.value}`}>
+                            {status.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Exam Date</label>
                     <Input
                       type="date"
                       value={examData.examDate}
