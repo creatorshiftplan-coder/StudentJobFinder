@@ -4,13 +4,20 @@ import { EmptyState } from "@/components/EmptyState";
 import { JobCard } from "@/components/JobCard";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ClipboardList, Briefcase, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ClipboardList, Briefcase, Loader2, Plus, Calendar } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 import type { Application, StudentProfile, Job } from "@shared/schema";
 
 export default function Applications() {
   const [activeSection, setActiveSection] = useState<"applications" | "listings">("applications");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [isExamDialogOpen, setIsExamDialogOpen] = useState(false);
+  const [examData, setExamData] = useState({ jobTitle: "", company: "", examDate: "", examTime: "" });
+  const { toast } = useToast();
 
   const { data: profile } = useQuery<StudentProfile>({
     queryKey: ["/api/profile"],
@@ -69,6 +76,34 @@ export default function Applications() {
     rejected: `Rejected (${filterByStatus("rejected").length})`,
   };
 
+  const handleAddExam = async () => {
+    if (!examData.jobTitle || !examData.company || !examData.examDate) {
+      toast({ title: "Error", description: "Please fill in all required fields", variant: "destructive" });
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/exams", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobTitle: examData.jobTitle,
+          company: examData.company,
+          examDate: examData.examDate,
+          examTime: examData.examTime,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to add exam");
+
+      toast({ title: "Success", description: "Exam added successfully!" });
+      setExamData({ jobTitle: "", company: "", examDate: "", examTime: "" });
+      setIsExamDialogOpen(false);
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to add exam", variant: "destructive" });
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div>
@@ -109,9 +144,10 @@ export default function Applications() {
 
       {activeSection === "applications" && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Filter by Status</h2>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-3 flex-1 min-w-[250px]">
+              <h2 className="text-xl font-semibold">Filter by Status</h2>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger data-testid="select-status-filter" className="w-full md:w-64 px-4 py-3 text-base font-semibold border-2 border-muted rounded-md hover-elevate">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
@@ -139,6 +175,70 @@ export default function Applications() {
                 </SelectItem>
               </SelectContent>
             </Select>
+            </div>
+
+            <Dialog open={isExamDialogOpen} onOpenChange={setIsExamDialogOpen}>
+              <DialogTrigger asChild>
+                <Button data-testid="button-add-exam" className="gap-2 px-6 py-3 text-base font-semibold hover-elevate">
+                  <Plus className="h-5 w-5" />
+                  Add Exam
+                </Button>
+              </DialogTrigger>
+              <DialogContent data-testid="dialog-add-exam" className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    Add Exam Schedule
+                  </DialogTitle>
+                  <DialogDescription>Manually add an exam date and details for your application</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Job Title *</label>
+                    <Input
+                      placeholder="e.g., Senior Manager"
+                      value={examData.jobTitle}
+                      onChange={(e) => setExamData({ ...examData, jobTitle: e.target.value })}
+                      data-testid="input-exam-job-title"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Company/Organization *</label>
+                    <Input
+                      placeholder="e.g., HDFC Bank"
+                      value={examData.company}
+                      onChange={(e) => setExamData({ ...examData, company: e.target.value })}
+                      data-testid="input-exam-company"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Exam Date *</label>
+                    <Input
+                      type="date"
+                      value={examData.examDate}
+                      onChange={(e) => setExamData({ ...examData, examDate: e.target.value })}
+                      data-testid="input-exam-date"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Exam Time</label>
+                    <Input
+                      type="time"
+                      value={examData.examTime}
+                      onChange={(e) => setExamData({ ...examData, examTime: e.target.value })}
+                      data-testid="input-exam-time"
+                    />
+                  </div>
+                  <Button
+                    onClick={handleAddExam}
+                    className="w-full py-3 text-base font-semibold hover-elevate"
+                    data-testid="button-save-exam"
+                  >
+                    Save Exam
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
 
           {filteredApplications.length === 0 ? (

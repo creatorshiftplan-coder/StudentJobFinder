@@ -164,3 +164,30 @@ export const APPLICATION_STATUSES = [
   { value: "selected", label: "Selected", icon: "Trophy" },
   { value: "rejected", label: "Rejected", icon: "AlertCircle" },
 ] as const;
+
+// Exam Schema
+export interface Exam {
+  id: string;
+  studentId: string;
+  jobId?: string;
+  jobTitle: string;
+  company: string;
+  examDate: string;
+  examTime?: string;
+  center?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export const insertExamSchema = z.object({
+  studentId: z.string(),
+  jobId: z.string().optional(),
+  jobTitle: z.string().min(1, "Job title is required"),
+  company: z.string().min(1, "Company name is required"),
+  examDate: z.string().min(1, "Exam date is required"),
+  examTime: z.string().optional(),
+  center: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+export type InsertExam = z.infer<typeof insertExamSchema>;
