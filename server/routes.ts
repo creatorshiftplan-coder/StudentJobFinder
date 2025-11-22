@@ -457,14 +457,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Student profile not found" });
       }
       
-      const data = insertExamSchema.parse({
-        ...req.body,
-        studentId: profile.id,
-      });
-      const exam = await storage.createExam(data);
-      res.status(201).json(exam);
+      try {
+        const data = insertExamSchema.parse({
+          ...req.body,
+          studentId: profile.id,
+        });
+        const exam = await storage.createExam(data);
+        res.status(201).json(exam);
+      } catch (validationError: any) {
+        console.error("[Exam Validation Error]", validationError.errors);
+        res.status(400).json({ 
+          error: "Validation failed", 
+          details: validationError.errors 
+        });
+      }
     } catch (error: any) {
-      res.status(400).json({ error: error.message || "Failed to create exam" });
+      console.error("[Exam Creation Error]", error);
+      res.status(500).json({ error: error.message || "Failed to create exam" });
     }
   });
 

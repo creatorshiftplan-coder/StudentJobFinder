@@ -108,27 +108,42 @@ export default function Applications() {
     }
 
     try {
+      const payload: Record<string, any> = {
+        jobTitle: examData.jobTitle,
+        company: examData.company,
+        status: examData.status,
+      };
+
+      // Only add optional fields if they have values
+      if (examData.examDate) {
+        payload.examDate = examData.examDate;
+      }
+      if (examData.examTime) {
+        payload.examTime = examData.examTime;
+      }
+
       const response = await fetch("/api/exams", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jobTitle: examData.jobTitle,
-          company: examData.company,
-          examDate: examData.examDate || null,
-          examTime: examData.examTime,
-          status: examData.status,
-        }),
+        body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error("Failed to add exam");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to add exam");
+      }
 
       toast({ title: "Success", description: "Exam added successfully!" });
       setExamData({ jobTitle: "", company: "", examDate: "", examTime: "", status: "pending" });
       setIsExamDialogOpen(false);
       // Refresh exams query
       window.location.reload();
-    } catch (error) {
-      toast({ title: "Error", description: "Failed to add exam", variant: "destructive" });
+    } catch (error: any) {
+      toast({ 
+        title: "Error", 
+        description: error.message || "Failed to add exam", 
+        variant: "destructive" 
+      });
     }
   };
 

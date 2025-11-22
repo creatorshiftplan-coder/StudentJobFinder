@@ -185,11 +185,11 @@ export const insertExamSchema = z.object({
   jobId: z.string().optional(),
   jobTitle: z.string().min(1, "Job title is required"),
   company: z.string().min(1, "Company name is required"),
-  examDate: z.string().optional(),
-  examTime: z.string().optional(),
+  examDate: z.string().optional().nullable(),
+  examTime: z.string().optional().nullable(),
   status: z.enum(["pending", "applied", "admit_card_released", "result_released", "selected", "rejected"]).default("pending"),
-  center: z.string().optional(),
-  notes: z.string().optional(),
-});
+  center: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
+}).strict();
 
 export type InsertExam = z.infer<typeof insertExamSchema>;
