@@ -1,4 +1,4 @@
-import { useState, useContext, createContext, useEffect, ReactNode } from "react";
+import { useState, useContext, createContext, useEffect, type ReactNode } from "react";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://cvnalogvvfzapxmozdyh.supabase.co";
 
@@ -27,7 +27,8 @@ export function AuthProvider(props: { children: ReactNode }) {
     const stored = localStorage.getItem("accessToken");
     if (stored) {
       setAccessToken(stored);
-      setUser({ id: stored.substring(0, 20), email: localStorage.getItem("userEmail") || "user" });
+      const email = localStorage.getItem("userEmail") || "user";
+      setUser({ id: stored.substring(0, 20), email });
       setLoading(false);
     } else {
       setLoading(false);
@@ -46,7 +47,9 @@ export function AuthProvider(props: { children: ReactNode }) {
       throw new Error(error.error_description || error.error || "Login failed");
     }
 
-    const { access_token, user: authUser } = await response.json();
+    const result = await response.json();
+    const access_token = result.access_token;
+    const authUser = result.user;
     setUser({ id: authUser.id, email: authUser.email });
     setAccessToken(access_token);
     localStorage.setItem("accessToken", access_token);
@@ -65,7 +68,9 @@ export function AuthProvider(props: { children: ReactNode }) {
       throw new Error(error.error_description || error.error || "Signup failed");
     }
 
-    const { access_token, user: authUser } = await response.json();
+    const result = await response.json();
+    const access_token = result.access_token;
+    const authUser = result.user;
     setUser({ id: authUser.id, email: authUser.email });
     setAccessToken(access_token);
     localStorage.setItem("accessToken", access_token);
@@ -79,10 +84,10 @@ export function AuthProvider(props: { children: ReactNode }) {
     localStorage.removeItem("userEmail");
   };
 
-  const ctxValue = { user, loading, accessToken, login, signup, logout };
+  const contextValue: AuthContextType = { user, loading, accessToken, login, signup, logout };
 
   return (
-    <AuthContext.Provider value={ctxValue}>
+    <AuthContext.Provider value={contextValue}>
       {props.children}
     </AuthContext.Provider>
   );

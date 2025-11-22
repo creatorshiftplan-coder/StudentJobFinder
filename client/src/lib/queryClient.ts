@@ -36,7 +36,7 @@ export async function apiRequest(
   options?: RequestInit,
 ): Promise<any> {
   const token = getAccessToken();
-  const headers = { ...options?.headers };
+  const headers: Record<string, string> = { ...((options?.headers as Record<string, string>) || {}) };
 
   // Add auth token if available
   if (token) {
