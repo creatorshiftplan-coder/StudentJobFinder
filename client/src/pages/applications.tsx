@@ -3,13 +3,14 @@ import { ApplicationCard } from "@/components/ApplicationCard";
 import { EmptyState } from "@/components/EmptyState";
 import { JobCard } from "@/components/JobCard";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ClipboardList, Briefcase, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { Application, StudentProfile, Job } from "@shared/schema";
 
 export default function Applications() {
   const [activeSection, setActiveSection] = useState<"applications" | "listings">("applications");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const { data: profile } = useQuery<StudentProfile>({
     queryKey: ["/api/profile"],
@@ -57,6 +58,17 @@ export default function Applications() {
     );
   }
 
+  const filteredApplications = filterByStatus(statusFilter);
+  const statusLabels: Record<string, string> = {
+    all: `All (${applications.length})`,
+    pending: `Pending (${filterByStatus("pending").length})`,
+    applied: `Applied (${filterByStatus("applied").length})`,
+    admit_card_released: `Admit Card (${filterByStatus("admit_card_released").length})`,
+    result_released: `Result (${filterByStatus("result_released").length})`,
+    selected: `Selected (${filterByStatus("selected").length})`,
+    rejected: `Rejected (${filterByStatus("rejected").length})`,
+  };
+
   return (
     <div className="space-y-8">
       <div>
@@ -96,77 +108,59 @@ export default function Applications() {
       </div>
 
       {activeSection === "applications" && (
-        <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 max-w-4xl overflow-x-auto h-auto gap-2 bg-transparent p-2 rounded-lg">
-            <TabsTrigger value="all" data-testid="tab-all" className="px-4 py-3 text-sm font-semibold rounded-md border-2 border-muted transition-all hover-elevate data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary">
-              All ({applications.length})
-            </TabsTrigger>
-            <TabsTrigger value="pending" data-testid="tab-pending" className="px-4 py-3 text-sm font-semibold rounded-md border-2 border-muted transition-all hover-elevate data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary">
-              Pending ({filterByStatus("pending").length})
-            </TabsTrigger>
-            <TabsTrigger value="applied" data-testid="tab-applied" className="px-4 py-3 text-sm font-semibold rounded-md border-2 border-muted transition-all hover-elevate data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary">
-              Applied ({filterByStatus("applied").length})
-            </TabsTrigger>
-            <TabsTrigger value="admit_card_released" data-testid="tab-admit-card" className="px-4 py-3 text-sm font-semibold rounded-md border-2 border-muted transition-all hover-elevate data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary">
-              Admit Card ({filterByStatus("admit_card_released").length})
-            </TabsTrigger>
-            <TabsTrigger value="result_released" data-testid="tab-result-released" className="px-4 py-3 text-sm font-semibold rounded-md border-2 border-muted transition-all hover-elevate data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary">
-              Result ({filterByStatus("result_released").length})
-            </TabsTrigger>
-            <TabsTrigger value="selected" data-testid="tab-selected" className="px-4 py-3 text-sm font-semibold rounded-md border-2 border-muted transition-all hover-elevate data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary">
-              Selected ({filterByStatus("selected").length})
-            </TabsTrigger>
-            <TabsTrigger value="rejected" data-testid="tab-rejected" className="px-4 py-3 text-sm font-semibold rounded-md border-2 border-muted transition-all hover-elevate data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary">
-              Rejected ({filterByStatus("rejected").length})
-            </TabsTrigger>
-          </TabsList>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Filter by Status</h2>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger data-testid="select-status-filter" className="w-full md:w-64 px-4 py-3 text-base font-semibold border-2 border-muted rounded-md hover-elevate">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" data-testid="option-all">
+                  All ({applications.length})
+                </SelectItem>
+                <SelectItem value="pending" data-testid="option-pending">
+                  Pending ({filterByStatus("pending").length})
+                </SelectItem>
+                <SelectItem value="applied" data-testid="option-applied">
+                  Applied ({filterByStatus("applied").length})
+                </SelectItem>
+                <SelectItem value="admit_card_released" data-testid="option-admit-card">
+                  Admit Card ({filterByStatus("admit_card_released").length})
+                </SelectItem>
+                <SelectItem value="result_released" data-testid="option-result-released">
+                  Result ({filterByStatus("result_released").length})
+                </SelectItem>
+                <SelectItem value="selected" data-testid="option-selected">
+                  Selected ({filterByStatus("selected").length})
+                </SelectItem>
+                <SelectItem value="rejected" data-testid="option-rejected">
+                  Rejected ({filterByStatus("rejected").length})
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-          <TabsContent value="all" className="mt-6">
-            {applications.length === 0 ? (
-              <Card className="p-6">
-                <EmptyState
-                  title="No applications yet"
-                  description="Start applying to jobs to track your application status here"
-                  icon={ClipboardList}
+          {filteredApplications.length === 0 ? (
+            <Card className="p-6">
+              <EmptyState
+                title={`No ${statusFilter === "all" ? "" : statusFilter.replace(/_/g, " ")} applications`}
+                description="You have no applications in this status"
+                icon={ClipboardList}
+              />
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {filteredApplications.map((app) => (
+                <ApplicationCard
+                  key={app.id}
+                  application={app}
+                  onViewDetails={(id) => console.log('View details:', id)}
                 />
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {applications.map((app) => (
-                  <ApplicationCard
-                    key={app.id}
-                    application={app}
-                    onViewDetails={(id) => console.log('View details:', id)}
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          {["pending", "applied", "admit_card_released", "result_released", "selected", "rejected"].map((status) => (
-            <TabsContent key={status} value={status} className="mt-6">
-              {filterByStatus(status).length === 0 ? (
-                <Card className="p-6">
-                  <EmptyState
-                    title={`No ${status.replace(/_/g, " ")} applications`}
-                    description="You have no applications in this status"
-                    icon={ClipboardList}
-                  />
-                </Card>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {filterByStatus(status).map((app) => (
-                    <ApplicationCard
-                      key={app.id}
-                      application={app}
-                      onViewDetails={(id) => console.log('View details:', id)}
-                    />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-          ))}
-        </Tabs>
+              ))}
+            </div>
+          )}
+        </div>
       )}
 
       {activeSection === "listings" && (
