@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
 
 const menuItems = [
   {
@@ -63,6 +64,7 @@ const menuItems = [
 
 export function AppSidebar() {
   const [location] = useLocation();
+  const { logout } = useAuth();
 
   return (
     <Sidebar>
@@ -98,7 +100,14 @@ export function AppSidebar() {
             <p className="text-sm font-medium truncate">Student Name</p>
             <p className="text-xs text-muted-foreground truncate">student@email.com</p>
           </div>
-          <Button variant="ghost" size="icon" className="flex-shrink-0" data-testid="button-logout">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="flex-shrink-0" 
+            data-testid="button-logout"
+            onClick={logout}
+            title="Logout"
+          >
             <LogOut className="h-4 w-4" />
           </Button>
         </div>
