@@ -64,10 +64,10 @@ export default function Applications() {
         <p className="text-muted-foreground mt-2">Track applications and browse job listings</p>
       </div>
 
-      <div className="flex gap-2 border-b">
+      <div className="flex gap-3 border-b pb-0">
         <button
           onClick={() => setActiveSection("applications")}
-          className={`px-6 py-3 font-semibold text-lg border-b-4 transition-colors ${
+          className={`px-6 py-3 font-semibold text-lg border-b-4 transition-all hover-elevate ${
             activeSection === "applications"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -81,7 +81,7 @@ export default function Applications() {
         </button>
         <button
           onClick={() => setActiveSection("listings")}
-          className={`px-6 py-3 font-semibold text-lg border-b-4 transition-colors ${
+          className={`px-6 py-3 font-semibold text-lg border-b-4 transition-all hover-elevate ${
             activeSection === "listings"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -97,26 +97,26 @@ export default function Applications() {
 
       {activeSection === "applications" && (
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 max-w-4xl overflow-x-auto h-auto gap-1 bg-transparent p-0">
-            <TabsTrigger value="all" data-testid="tab-all" className="px-4 py-3 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 max-w-4xl overflow-x-auto h-auto gap-2 bg-transparent p-2 rounded-lg">
+            <TabsTrigger value="all" data-testid="tab-all" className="px-4 py-3 text-sm font-semibold rounded-md border-2 border-muted transition-all hover-elevate data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary">
               All ({applications.length})
             </TabsTrigger>
-            <TabsTrigger value="pending" data-testid="tab-pending" className="px-4 py-3 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
+            <TabsTrigger value="pending" data-testid="tab-pending" className="px-4 py-3 text-sm font-semibold rounded-md border-2 border-muted transition-all hover-elevate data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary">
               Pending ({filterByStatus("pending").length})
             </TabsTrigger>
-            <TabsTrigger value="applied" data-testid="tab-applied" className="px-4 py-3 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
+            <TabsTrigger value="applied" data-testid="tab-applied" className="px-4 py-3 text-sm font-semibold rounded-md border-2 border-muted transition-all hover-elevate data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary">
               Applied ({filterByStatus("applied").length})
             </TabsTrigger>
-            <TabsTrigger value="admit_card_released" data-testid="tab-admit-card" className="px-4 py-3 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
+            <TabsTrigger value="admit_card_released" data-testid="tab-admit-card" className="px-4 py-3 text-sm font-semibold rounded-md border-2 border-muted transition-all hover-elevate data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary">
               Admit Card ({filterByStatus("admit_card_released").length})
             </TabsTrigger>
-            <TabsTrigger value="result_released" data-testid="tab-result-released" className="px-4 py-3 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
+            <TabsTrigger value="result_released" data-testid="tab-result-released" className="px-4 py-3 text-sm font-semibold rounded-md border-2 border-muted transition-all hover-elevate data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary">
               Result ({filterByStatus("result_released").length})
             </TabsTrigger>
-            <TabsTrigger value="selected" data-testid="tab-selected" className="px-4 py-3 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
+            <TabsTrigger value="selected" data-testid="tab-selected" className="px-4 py-3 text-sm font-semibold rounded-md border-2 border-muted transition-all hover-elevate data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary">
               Selected ({filterByStatus("selected").length})
             </TabsTrigger>
-            <TabsTrigger value="rejected" data-testid="tab-rejected" className="px-4 py-3 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
+            <TabsTrigger value="rejected" data-testid="tab-rejected" className="px-4 py-3 text-sm font-semibold rounded-md border-2 border-muted transition-all hover-elevate data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary">
               Rejected ({filterByStatus("rejected").length})
             </TabsTrigger>
           </TabsList>
