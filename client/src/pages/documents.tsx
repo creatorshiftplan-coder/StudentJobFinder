@@ -10,6 +10,59 @@ import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Document, StudentProfile, REQUIRED_DOCUMENTS } from "@shared/schema";
 
+// Smart document matching with keyword detection
+function smartDocumentMatch(uploadedFileName: string, requiredDocType: string): boolean {
+  const fileName = uploadedFileName.toLowerCase().replace(/\.[^/.]+$/, ""); // Remove extension
+  const reqDoc = requiredDocType.toLowerCase();
+
+  // Define keyword patterns for each document type
+  const docPatterns: Record<string, string[]> = {
+    "photo": ["photo", "passport", "recent", "profile_pic", "profilepic", "pp", "pic"],
+    "signature": ["signature", "sign", "sig"],
+    "thumb": ["thumb", "fingerprint", "impression", "thumbprint"],
+    "10th": ["10th", "tenth", "matriculation", "sslc", "board_exam", "x_", "class_10"],
+    "12th": ["12th", "twelfth", "intermediate", "hsc", "class_12", "senior_secondary"],
+    "graduation": ["graduation", "degree", "bachelor", "btech", "bca", "bsc", "bcom", "ba", "graduate", "diploma"],
+    "caste": ["caste", "sc", "st", "obc", "ur", "general", "category", "reservation"],
+    "ews": ["ews", "economically", "weaker"],
+    "pwd": ["pwd", "disability", "handicap", "medical", "certificate", "ph", "difabled"],
+    "experience": ["experience", "work_exp", "workexp", "employment", "job_letter", "certificate_of_experience"],
+    "identity": ["identity", "aadhaar", "aadhar", "pan", "voter", "passport", "dl", "driving", "license", "id", "proof"],
+    "ncc": ["ncc", "national_cadet"],
+    "domicile": ["domicile", "residence", "inhabitant"],
+    "serviceman": ["serviceman", "ex_service", "exservice", "discharge", "service", "military", "armed"],
+  };
+
+  // Check for exact phrase matches first
+  const exactMatches: Record<string, string[]> = {
+    "photo (recent passport size)": ["photo"],
+    "signature": ["signature"],
+    "thumb impression (if required)": ["thumb"],
+    "10th marksheet / certificate": ["10th"],
+    "12th marksheet / certificate": ["12th"],
+    "graduation certificate / diploma": ["graduation", "diploma"],
+    "caste / ews / pwd certificates": ["caste", "ews", "pwd"],
+    "experience certificate (if applicable)": ["experience"],
+    "identity proof scan (aadhaar / pan / voter id / passport / dl)": ["identity", "aadhaar", "pan", "voter", "passport", "dl"],
+  };
+
+  // Get patterns for this required doc
+  const patterns = exactMatches[reqDoc] || [];
+  
+  // Check if any pattern keywords match the filename
+  for (const pattern of patterns) {
+    const keywords = docPatterns[pattern] || [pattern];
+    for (const keyword of keywords) {
+      if (fileName.includes(keyword)) {
+        return true;
+      }
+    }
+  }
+
+  // Fallback: simple substring match
+  return fileName.includes(reqDoc.split("/")[0].trim().substring(0, 10));
+}
+
 export default function Documents() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -139,7 +192,7 @@ export default function Documents() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {requiredDocs.map((doc) => {
-              const isUploaded = documents.some(d => d.name.toLowerCase().includes(doc.toLowerCase()));
+              const isUploaded = documents.some(d => smartDocumentMatch(d.name, doc));
               return (
                 <div key={doc} className="flex items-center gap-2 p-2 rounded bg-white dark:bg-slate-800">
                   {isUploaded ? (
