@@ -11,6 +11,8 @@ import type {
   InsertJob,
   Application,
   InsertApplication,
+  Exam,
+  InsertExam,
 } from "@shared/schema";
 import { IStorage } from "./storage";
 
@@ -308,6 +310,50 @@ export class SupabaseStorage implements IStorage {
     return this.mapApplication(data);
   }
 
+  // Exam Methods
+  async getExam(id: string): Promise<Exam | undefined> {
+    const { data, error } = await this.supabase
+      .from("exams")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", this.userId)
+      .single();
+
+    if (error) return undefined;
+    return this.mapExam(data);
+  }
+
+  async getExamsByStudent(studentId: string): Promise<Exam[]> {
+    const { data, error } = await this.supabase
+      .from("exams")
+      .select("*")
+      .eq("user_id", this.userId);
+
+    if (error) return [];
+    return data.map(e => this.mapExam(e));
+  }
+
+  async createExam(exam: InsertExam): Promise<Exam> {
+    const { data, error } = await this.supabase
+      .from("exams")
+      .insert({
+        user_id: this.userId,
+        job_title: exam.jobTitle,
+        company: exam.company,
+        exam_date: exam.examDate || null,
+        exam_time: exam.examTime || null,
+        status: exam.status || "pending",
+        job_id: exam.jobId || null,
+        center: exam.center || null,
+        notes: exam.notes || null,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return this.mapExam(data);
+  }
+
   // Helper mappers
   private mapProfile(data: any): StudentProfile {
     return {
@@ -361,6 +407,22 @@ export class SupabaseStorage implements IStorage {
       jobId: data.job_id,
       status: data.status,
       appliedDate: data.applied_date,
+    };
+  }
+
+  private mapExam(data: any): Exam {
+    return {
+      id: data.id,
+      studentId: data.user_id,
+      jobId: data.job_id,
+      jobTitle: data.job_title,
+      company: data.company,
+      examDate: data.exam_date,
+      examTime: data.exam_time,
+      status: data.status,
+      center: data.center,
+      notes: data.notes,
+      createdAt: data.created_at,
     };
   }
 }
