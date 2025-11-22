@@ -1,6 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { jobCache } from "./cache";
+import { startJobScheduler } from "./job-scheduler";
 import multer from "multer";
 import sharp from "sharp";
 import { OpenAI } from "openai";
@@ -31,6 +33,37 @@ function fileToDataUrl(file: Express.Multer.File): string {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Start the background job scheduler
+  startJobScheduler();
+
+  // Cache Routes
+  app.get("/api/cache/jobs", async (req, res) => {
+    try {
+      const allJobs = jobCache.getJobs();
+      res.json(allJobs);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch cached jobs" });
+    }
+  });
+
+  app.get("/api/cache/stats", async (req, res) => {
+    try {
+      const stats = jobCache.getCacheStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch cache stats" });
+    }
+  });
+
+  app.get("/api/cache/logs", async (req, res) => {
+    try {
+      const logs = jobCache.getLogs();
+      res.json(logs);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch logs" });
+    }
+  });
+
   // Student Profile Routes
   app.get("/api/profile", async (req, res) => {
     try {
