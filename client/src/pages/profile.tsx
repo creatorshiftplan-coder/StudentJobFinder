@@ -45,15 +45,58 @@ export default function Profile() {
     state: "",
     district: "",
     pinCode: "",
-    // Educational Qualification
-    highestQualification: "",
-    courseName: "",
-    boardUniversity: "",
-    dateOfPassing: "",
-    rollNumber: "",
-    percentageCGPA: "",
-    stream: "",
-    additionalQualifications: "",
+    // Educational Qualification - 10th
+    tenth_board: "",
+    tenth_school: "",
+    tenth_percentage: "",
+    tenth_passing_date: "",
+    tenth_certificate: "",
+    // Educational Qualification - 12th
+    twelfth_board: "",
+    twelfth_stream: "",
+    twelfth_school: "",
+    twelfth_percentage: "",
+    twelfth_passing_date: "",
+    twelfth_certificate: "",
+    // Educational Qualification - ITI/Diploma
+    diploma_trade: "",
+    diploma_institute: "",
+    diploma_board: "",
+    diploma_duration: "",
+    diploma_percentage: "",
+    diploma_passing_date: "",
+    // Educational Qualification - Graduation
+    graduation_course: "",
+    graduation_university: "",
+    graduation_specialization: "",
+    graduation_mode: "",
+    graduation_percentage: "",
+    graduation_passing_date: "",
+    // Educational Qualification - Engineering
+    engineering_branch: "",
+    engineering_university: "",
+    engineering_percentage: "",
+    engineering_passing_date: "",
+    engineering_roll: "",
+    // Educational Qualification - Post Graduation
+    postgrad_course: "",
+    postgrad_university: "",
+    postgrad_specialization: "",
+    postgrad_percentage: "",
+    postgrad_passing_date: "",
+    postgrad_roll: "",
+    // Educational Qualification - Professional
+    professional_degree: "",
+    professional_university: "",
+    professional_registration: "",
+    professional_percentage: "",
+    professional_passing_date: "",
+    // Educational Qualification - PhD
+    phd_subject: "",
+    phd_university: "",
+    phd_thesis: "",
+    phd_award_date: "",
+    phd_guide: "",
     // Employment Experience
     workExperience: "",
     organizationName: "",
@@ -308,16 +351,106 @@ export default function Profile() {
               <ChevronDown className={`h-5 w-5 transition-transform ${expandedSection === "education" ? "rotate-180" : ""}`} />
             </button>
             {expandedSection === "education" && (
-              <div className="p-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2"><Label>Highest Qualification</Label><Input name="highestQualification" value={formData.highestQualification} onChange={handleChange} /></div>
-                  <div className="space-y-2"><Label>Course / Degree Name</Label><Input name="courseName" value={formData.courseName} onChange={handleChange} /></div>
-                  <div className="space-y-2"><Label>Board / University</Label><Input name="boardUniversity" value={formData.boardUniversity} onChange={handleChange} /></div>
-                  <div className="space-y-2"><Label>Date of Passing</Label><Input name="dateOfPassing" type="date" value={formData.dateOfPassing} onChange={handleChange} /></div>
-                  <div className="space-y-2"><Label>Roll Number / Registration Number</Label><Input name="rollNumber" value={formData.rollNumber} onChange={handleChange} /></div>
-                  <div className="space-y-2"><Label>Percentage / CGPA</Label><Input name="percentageCGPA" value={formData.percentageCGPA} onChange={handleChange} /></div>
-                  <div className="space-y-2"><Label>Stream / Subjects</Label><Input name="stream" value={formData.stream} onChange={handleChange} /></div>
-                  <div className="space-y-2"><Label>Additional Qualifications</Label><Input name="additionalQualifications" value={formData.additionalQualifications} onChange={handleChange} placeholder="Computer / Diploma / ITI etc." /></div>
+              <div className="p-6 space-y-8">
+                {/* 10th Pass */}
+                <div className="border-b pb-6">
+                  <h3 className="text-lg font-semibold mb-4">10th Pass (Matriculation / SSC)</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>Board / Council</Label><Input name="tenth_board" value={formData.tenth_board} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>School Name</Label><Input name="tenth_school" value={formData.tenth_school} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Percentage / CGPA</Label><Input name="tenth_percentage" value={formData.tenth_percentage} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Date of Passing (YYYY-MM-DD)</Label><Input name="tenth_passing_date" type="date" value={formData.tenth_passing_date} onChange={handleChange} /></div>
+                    <div className="space-y-2 md:col-span-2"><Label>Certificate Number</Label><Input name="tenth_certificate" value={formData.tenth_certificate} onChange={handleChange} /></div>
+                  </div>
+                </div>
+
+                {/* 12th Pass */}
+                <div className="border-b pb-6">
+                  <h3 className="text-lg font-semibold mb-4">12th Pass (Higher Secondary / HSC / Intermediate)</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>Board / Council</Label><Input name="twelfth_board" value={formData.twelfth_board} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Stream (Science / Commerce / Arts)</Label><Input name="twelfth_stream" value={formData.twelfth_stream} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>School / College Name</Label><Input name="twelfth_school" value={formData.twelfth_school} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Percentage / CGPA</Label><Input name="twelfth_percentage" value={formData.twelfth_percentage} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Date of Passing (YYYY-MM-DD)</Label><Input name="twelfth_passing_date" type="date" value={formData.twelfth_passing_date} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Certificate Number</Label><Input name="twelfth_certificate" value={formData.twelfth_certificate} onChange={handleChange} /></div>
+                  </div>
+                </div>
+
+                {/* ITI / Diploma */}
+                <div className="border-b pb-6">
+                  <h3 className="text-lg font-semibold mb-4">ITI / Diploma in Engineering</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>Trade / Branch (Electrical / Mechanical / Civil / etc.)</Label><Input name="diploma_trade" value={formData.diploma_trade} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Institute Name</Label><Input name="diploma_institute" value={formData.diploma_institute} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Board / University</Label><Input name="diploma_board" value={formData.diploma_board} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Duration (1 year / 2 year / 3 year)</Label><Input name="diploma_duration" value={formData.diploma_duration} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Percentage / CGPA</Label><Input name="diploma_percentage" value={formData.diploma_percentage} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Date of Passing (YYYY-MM-DD)</Label><Input name="diploma_passing_date" type="date" value={formData.diploma_passing_date} onChange={handleChange} /></div>
+                  </div>
+                </div>
+
+                {/* Graduation */}
+                <div className="border-b pb-6">
+                  <h3 className="text-lg font-semibold mb-4">Graduation (BA / BSc / BCom / BBA / BCA / BSW / etc.)</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>Course Name</Label><Input name="graduation_course" value={formData.graduation_course} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>University / College Name</Label><Input name="graduation_university" value={formData.graduation_university} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Specialization</Label><Input name="graduation_specialization" value={formData.graduation_specialization} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Mode (Regular / Distance / Open)</Label><Input name="graduation_mode" value={formData.graduation_mode} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Percentage / CGPA</Label><Input name="graduation_percentage" value={formData.graduation_percentage} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Date of Passing (YYYY-MM-DD)</Label><Input name="graduation_passing_date" type="date" value={formData.graduation_passing_date} onChange={handleChange} /></div>
+                  </div>
+                </div>
+
+                {/* Engineering Degree */}
+                <div className="border-b pb-6">
+                  <h3 className="text-lg font-semibold mb-4">Engineering Degree (B.Tech / BE)</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>Branch (CSE / IT / Mechanical / Civil / Electrical / etc.)</Label><Input name="engineering_branch" value={formData.engineering_branch} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>University / Institute</Label><Input name="engineering_university" value={formData.engineering_university} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Percentage / CGPA</Label><Input name="engineering_percentage" value={formData.engineering_percentage} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Date of Passing (YYYY-MM-DD)</Label><Input name="engineering_passing_date" type="date" value={formData.engineering_passing_date} onChange={handleChange} /></div>
+                    <div className="space-y-2 md:col-span-2"><Label>Registration / Roll Number</Label><Input name="engineering_roll" value={formData.engineering_roll} onChange={handleChange} /></div>
+                  </div>
+                </div>
+
+                {/* Post Graduation */}
+                <div className="border-b pb-6">
+                  <h3 className="text-lg font-semibold mb-4">Post Graduation (MA / MSc / MCom / MBA / MCA / MSW / etc.)</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>Course Name</Label><Input name="postgrad_course" value={formData.postgrad_course} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>University / College Name</Label><Input name="postgrad_university" value={formData.postgrad_university} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Specialization</Label><Input name="postgrad_specialization" value={formData.postgrad_specialization} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Percentage / CGPA</Label><Input name="postgrad_percentage" value={formData.postgrad_percentage} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Date of Passing (YYYY-MM-DD)</Label><Input name="postgrad_passing_date" type="date" value={formData.postgrad_passing_date} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Registration / Roll Number</Label><Input name="postgrad_roll" value={formData.postgrad_roll} onChange={handleChange} /></div>
+                  </div>
+                </div>
+
+                {/* Professional / Technical */}
+                <div className="border-b pb-6">
+                  <h3 className="text-lg font-semibold mb-4">Professional / Technical Degrees</h3>
+                  <p className="text-sm text-muted-foreground mb-4">MBBS / BDS / B.Pharm / D.Pharm / Nursing / Law (LLB/LLM) / CA / CS / CMA</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>Degree Name</Label><Input name="professional_degree" value={formData.professional_degree} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>University / Institute</Label><Input name="professional_university" value={formData.professional_university} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Council Registration Number (if applicable)</Label><Input name="professional_registration" value={formData.professional_registration} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Percentage / CGPA</Label><Input name="professional_percentage" value={formData.professional_percentage} onChange={handleChange} /></div>
+                    <div className="space-y-2 md:col-span-2"><Label>Date of Passing (YYYY-MM-DD)</Label><Input name="professional_passing_date" type="date" value={formData.professional_passing_date} onChange={handleChange} /></div>
+                  </div>
+                </div>
+
+                {/* PhD / Research */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">PhD / M.Phil / Research Degree</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>Subject / Research Field</Label><Input name="phd_subject" value={formData.phd_subject} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>University / Institute</Label><Input name="phd_university" value={formData.phd_university} onChange={handleChange} /></div>
+                    <div className="space-y-2 md:col-span-2"><Label>Thesis Title</Label><Input name="phd_thesis" value={formData.phd_thesis} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Date of Award (YYYY-MM-DD)</Label><Input name="phd_award_date" type="date" value={formData.phd_award_date} onChange={handleChange} /></div>
+                    <div className="space-y-2"><Label>Guide / Supervisor Name</Label><Input name="phd_guide" value={formData.phd_guide} onChange={handleChange} /></div>
+                  </div>
                 </div>
               </div>
             )}
