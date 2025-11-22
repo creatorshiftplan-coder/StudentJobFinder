@@ -54,3 +54,4 @@ externalPort = 3000
 [userenv.shared]
 SUPABASE_URL = "https://cvnalogvvfzapxmozdyh.supabase.co"
 SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2bmFsb2d2dmZ6YXB4bW96ZHloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM4MDg1ODEsImV4cCI6MjA3OTM4NDU4MX0.rKSWJVttVHnGkzv3RW8Dcd2PzbyC8rdBTRveXHTGGiA"
+VITE_SUPABASE_URL = "https://cvnalogvvfzapxmozdyh.supabase.co"

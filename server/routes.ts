@@ -37,8 +37,9 @@ function fileToDataUrl(file: Express.Multer.File): string {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Start the background job scheduler
-  startJobScheduler();
+  // Local job scheduler disabled - using Supabase Edge Functions instead
+  // Uncomment line below to use local scheduler
+  // startJobScheduler();
 
   // Get storage instance based on configuration
   function getStorage(req: AuthRequest) {
