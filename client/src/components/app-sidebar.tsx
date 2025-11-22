@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { 
   LayoutDashboard, 
   User, 
@@ -6,7 +7,8 @@ import {
   Camera, 
   Briefcase, 
   ClipboardList,
-  LogOut
+  LogOut,
+  ChevronDown
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
@@ -19,6 +21,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarFooter,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -39,16 +43,18 @@ const menuItems = [
     title: "Documents",
     url: "/documents",
     icon: FileText,
-  },
-  {
-    title: "Signature",
-    url: "/signature",
-    icon: PenTool,
-  },
-  {
-    title: "Photo",
-    url: "/photo",
-    icon: Camera,
+    submenu: [
+      {
+        title: "Signature",
+        url: "/signature",
+        icon: PenTool,
+      },
+      {
+        title: "Photo",
+        url: "/photo",
+        icon: Camera,
+      },
+    ],
   },
   {
     title: "Jobs",
@@ -65,6 +71,14 @@ const menuItems = [
 export function AppSidebar() {
   const [location] = useLocation();
   const { logout } = useAuth();
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+
+  const toggleSubmenu = (title: string) => {
+    setExpandedItems((prev) => ({
+      ...prev,
+      [title]: !prev[title],
+    }));
+  };
 
   return (
     <Sidebar>
@@ -75,15 +89,45 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={location === item.url}>
-                    <Link href={item.url} data-testid={`link-nav-${item.title.toLowerCase()}`}>
-                      <item.icon className="h-5 w-5" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+              {menuItems.map((item: any) => (
+                <div key={item.title}>
+                  <SidebarMenuItem>
+                    {item.submenu ? (
+                      <>
+                        <SidebarMenuButton
+                          onClick={() => toggleSubmenu(item.title)}
+                          className="cursor-pointer"
+                          isActive={location === item.url || item.submenu?.some((sub: any) => location === sub.url)}
+                        >
+                          <item.icon className="h-5 w-5" />
+                          <span>{item.title}</span>
+                          <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${expandedItems[item.title] ? "rotate-180" : ""}`} />
+                        </SidebarMenuButton>
+                        {expandedItems[item.title] && (
+                          <SidebarMenuSub>
+                            {item.submenu.map((subItem: any) => (
+                              <SidebarMenuSubItem key={subItem.title}>
+                                <SidebarMenuButton asChild isActive={location === subItem.url}>
+                                  <Link href={subItem.url} data-testid={`link-nav-${subItem.title.toLowerCase()}`}>
+                                    <subItem.icon className="h-5 w-5" />
+                                    <span>{subItem.title}</span>
+                                  </Link>
+                                </SidebarMenuButton>
+                              </SidebarMenuSubItem>
+                            ))}
+                          </SidebarMenuSub>
+                        )}
+                      </>
+                    ) : (
+                      <SidebarMenuButton asChild isActive={location === item.url}>
+                        <Link href={item.url} data-testid={`link-nav-${item.title.toLowerCase()}`}>
+                          <item.icon className="h-5 w-5" />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    )}
+                  </SidebarMenuItem>
+                </div>
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
