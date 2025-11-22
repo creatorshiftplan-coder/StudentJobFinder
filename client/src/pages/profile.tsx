@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Camera, Save, Loader2, ChevronDown } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -16,6 +17,7 @@ export default function Profile() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [expandedSection, setExpandedSection] = useState<string>("personal");
+  const [selectedEducationType, setSelectedEducationType] = useState<string>("tenth");
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -351,10 +353,28 @@ export default function Profile() {
               <ChevronDown className={`h-5 w-5 transition-transform ${expandedSection === "education" ? "rotate-180" : ""}`} />
             </button>
             {expandedSection === "education" && (
-              <div className="p-6 space-y-8">
+              <div className="p-6 space-y-6">
+                {/* Education Type Dropdown */}
+                <div className="space-y-2">
+                  <Label>Select Qualification Type</Label>
+                  <Select value={selectedEducationType} onValueChange={setSelectedEducationType}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="tenth">10th Pass (Matriculation / SSC)</SelectItem>
+                      <SelectItem value="twelfth">12th Pass (Higher Secondary / HSC / Intermediate)</SelectItem>
+                      <SelectItem value="diploma">ITI / Diploma in Engineering</SelectItem>
+                      <SelectItem value="graduation">Graduation (BA, BSc, BCom, BBA, BCA, BSW, etc.)</SelectItem>
+                      <SelectItem value="engineering">Engineering Degree (B.Tech / BE in any branch)</SelectItem>
+                      <SelectItem value="postgrad">Post Graduation (MA, MSc, BCom, MBA, MCA, MSW, etc.)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 {/* 10th Pass */}
-                <div className="border-b pb-6">
-                  <h3 className="text-lg font-semibold mb-4">10th Pass (Matriculation / SSC)</h3>
+                {selectedEducationType === "tenth" && (
+                <div className="border-t pt-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2"><Label>Board / Council</Label><Input name="tenth_board" value={formData.tenth_board} onChange={handleChange} /></div>
                     <div className="space-y-2"><Label>School Name</Label><Input name="tenth_school" value={formData.tenth_school} onChange={handleChange} /></div>
@@ -363,10 +383,11 @@ export default function Profile() {
                     <div className="space-y-2 md:col-span-2"><Label>Certificate Number</Label><Input name="tenth_certificate" value={formData.tenth_certificate} onChange={handleChange} /></div>
                   </div>
                 </div>
+                )}
 
                 {/* 12th Pass */}
-                <div className="border-b pb-6">
-                  <h3 className="text-lg font-semibold mb-4">12th Pass (Higher Secondary / HSC / Intermediate)</h3>
+                {selectedEducationType === "twelfth" && (
+                <div className="border-t pt-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2"><Label>Board / Council</Label><Input name="twelfth_board" value={formData.twelfth_board} onChange={handleChange} /></div>
                     <div className="space-y-2"><Label>Stream (Science / Commerce / Arts)</Label><Input name="twelfth_stream" value={formData.twelfth_stream} onChange={handleChange} /></div>
@@ -376,10 +397,11 @@ export default function Profile() {
                     <div className="space-y-2"><Label>Certificate Number</Label><Input name="twelfth_certificate" value={formData.twelfth_certificate} onChange={handleChange} /></div>
                   </div>
                 </div>
+                )}
 
                 {/* ITI / Diploma */}
-                <div className="border-b pb-6">
-                  <h3 className="text-lg font-semibold mb-4">ITI / Diploma in Engineering</h3>
+                {selectedEducationType === "diploma" && (
+                <div className="border-t pt-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2"><Label>Trade / Branch (Electrical / Mechanical / Civil / etc.)</Label><Input name="diploma_trade" value={formData.diploma_trade} onChange={handleChange} /></div>
                     <div className="space-y-2"><Label>Institute Name</Label><Input name="diploma_institute" value={formData.diploma_institute} onChange={handleChange} /></div>
@@ -389,10 +411,11 @@ export default function Profile() {
                     <div className="space-y-2"><Label>Date of Passing (YYYY-MM-DD)</Label><Input name="diploma_passing_date" type="date" value={formData.diploma_passing_date} onChange={handleChange} /></div>
                   </div>
                 </div>
+                )}
 
                 {/* Graduation */}
-                <div className="border-b pb-6">
-                  <h3 className="text-lg font-semibold mb-4">Graduation (BA / BSc / BCom / BBA / BCA / BSW / etc.)</h3>
+                {selectedEducationType === "graduation" && (
+                <div className="border-t pt-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2"><Label>Course Name</Label><Input name="graduation_course" value={formData.graduation_course} onChange={handleChange} /></div>
                     <div className="space-y-2"><Label>University / College Name</Label><Input name="graduation_university" value={formData.graduation_university} onChange={handleChange} /></div>
@@ -402,10 +425,11 @@ export default function Profile() {
                     <div className="space-y-2"><Label>Date of Passing (YYYY-MM-DD)</Label><Input name="graduation_passing_date" type="date" value={formData.graduation_passing_date} onChange={handleChange} /></div>
                   </div>
                 </div>
+                )}
 
                 {/* Engineering Degree */}
-                <div className="border-b pb-6">
-                  <h3 className="text-lg font-semibold mb-4">Engineering Degree (B.Tech / BE)</h3>
+                {selectedEducationType === "engineering" && (
+                <div className="border-t pt-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2"><Label>Branch (CSE / IT / Mechanical / Civil / Electrical / etc.)</Label><Input name="engineering_branch" value={formData.engineering_branch} onChange={handleChange} /></div>
                     <div className="space-y-2"><Label>University / Institute</Label><Input name="engineering_university" value={formData.engineering_university} onChange={handleChange} /></div>
@@ -414,10 +438,11 @@ export default function Profile() {
                     <div className="space-y-2 md:col-span-2"><Label>Registration / Roll Number</Label><Input name="engineering_roll" value={formData.engineering_roll} onChange={handleChange} /></div>
                   </div>
                 </div>
+                )}
 
                 {/* Post Graduation */}
-                <div className="border-b pb-6">
-                  <h3 className="text-lg font-semibold mb-4">Post Graduation (MA / MSc / MCom / MBA / MCA / MSW / etc.)</h3>
+                {selectedEducationType === "postgrad" && (
+                <div className="border-t pt-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2"><Label>Course Name</Label><Input name="postgrad_course" value={formData.postgrad_course} onChange={handleChange} /></div>
                     <div className="space-y-2"><Label>University / College Name</Label><Input name="postgrad_university" value={formData.postgrad_university} onChange={handleChange} /></div>
@@ -427,31 +452,7 @@ export default function Profile() {
                     <div className="space-y-2"><Label>Registration / Roll Number</Label><Input name="postgrad_roll" value={formData.postgrad_roll} onChange={handleChange} /></div>
                   </div>
                 </div>
-
-                {/* Professional / Technical */}
-                <div className="border-b pb-6">
-                  <h3 className="text-lg font-semibold mb-4">Professional / Technical Degrees</h3>
-                  <p className="text-sm text-muted-foreground mb-4">MBBS / BDS / B.Pharm / D.Pharm / Nursing / Law (LLB/LLM) / CA / CS / CMA</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2"><Label>Degree Name</Label><Input name="professional_degree" value={formData.professional_degree} onChange={handleChange} /></div>
-                    <div className="space-y-2"><Label>University / Institute</Label><Input name="professional_university" value={formData.professional_university} onChange={handleChange} /></div>
-                    <div className="space-y-2"><Label>Council Registration Number (if applicable)</Label><Input name="professional_registration" value={formData.professional_registration} onChange={handleChange} /></div>
-                    <div className="space-y-2"><Label>Percentage / CGPA</Label><Input name="professional_percentage" value={formData.professional_percentage} onChange={handleChange} /></div>
-                    <div className="space-y-2 md:col-span-2"><Label>Date of Passing (YYYY-MM-DD)</Label><Input name="professional_passing_date" type="date" value={formData.professional_passing_date} onChange={handleChange} /></div>
-                  </div>
-                </div>
-
-                {/* PhD / Research */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">PhD / M.Phil / Research Degree</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2"><Label>Subject / Research Field</Label><Input name="phd_subject" value={formData.phd_subject} onChange={handleChange} /></div>
-                    <div className="space-y-2"><Label>University / Institute</Label><Input name="phd_university" value={formData.phd_university} onChange={handleChange} /></div>
-                    <div className="space-y-2 md:col-span-2"><Label>Thesis Title</Label><Input name="phd_thesis" value={formData.phd_thesis} onChange={handleChange} /></div>
-                    <div className="space-y-2"><Label>Date of Award (YYYY-MM-DD)</Label><Input name="phd_award_date" type="date" value={formData.phd_award_date} onChange={handleChange} /></div>
-                    <div className="space-y-2"><Label>Guide / Supervisor Name</Label><Input name="phd_guide" value={formData.phd_guide} onChange={handleChange} /></div>
-                  </div>
-                </div>
+                )}
               </div>
             )}
           </div>
