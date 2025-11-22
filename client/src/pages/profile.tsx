@@ -116,13 +116,6 @@ export default function Profile() {
     nccCertificate: "",
     exServicemanDetails: "",
     domicileCertificate: "",
-    // Exam Specific
-    examCenterPreference: "",
-    postPreference: "",
-    languagePreference: "",
-    shiftPreference: "",
-    // Declarations
-    selfDeclaration: "",
   });
 
   const { data: profile, isLoading } = useQuery<StudentProfile>({
@@ -506,45 +499,6 @@ export default function Profile() {
             )}
           </div>
 
-          {/* Exam / Application-Specific Section */}
-          <div className="border rounded-lg overflow-hidden">
-            <button
-              onClick={() => setExpandedSection(expandedSection === "exam" ? "" : "exam")}
-              className="w-full flex items-center justify-between px-5 py-3 bg-secondary hover-elevate"
-            >
-              <span className="text-sm md:text-base font-semibold">Exam</span>
-              <ChevronDown className={`h-5 w-5 transition-transform ${expandedSection === "exam" ? "rotate-180" : ""}`} />
-            </button>
-            {expandedSection === "exam" && (
-              <div className="p-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2"><Label>Exam Center Preference (City)</Label><Input name="examCenterPreference" value={formData.examCenterPreference} onChange={handleChange} /></div>
-                  <div className="space-y-2"><Label>Post Preference (if multiple)</Label><Input name="postPreference" value={formData.postPreference} onChange={handleChange} /></div>
-                  <div className="space-y-2"><Label>Language Preference</Label><Input name="languagePreference" value={formData.languagePreference} onChange={handleChange} /></div>
-                  <div className="space-y-2"><Label>Shift Preference (if applicable)</Label><Input name="shiftPreference" value={formData.shiftPreference} onChange={handleChange} /></div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Declaration Section */}
-          <div className="border rounded-lg overflow-hidden">
-            <button
-              onClick={() => setExpandedSection(expandedSection === "declaration" ? "" : "declaration")}
-              className="w-full flex items-center justify-between px-5 py-3 bg-secondary hover-elevate"
-            >
-              <span className="text-sm md:text-base font-semibold">Declaration</span>
-              <ChevronDown className={`h-5 w-5 transition-transform ${expandedSection === "declaration" ? "rotate-180" : ""}`} />
-            </button>
-            {expandedSection === "declaration" && (
-              <div className="p-6 space-y-6">
-                <div className="space-y-2">
-                  <Label>Self Declaration</Label>
-                  <Textarea name="selfDeclaration" value={formData.selfDeclaration} onChange={handleChange} rows={5} placeholder="Enter your self declaration here..." />
-                </div>
-              </div>
-            )}
-          </div>
         </div>
 
         <Button
