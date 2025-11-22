@@ -2,8 +2,17 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { storage } from "./storage";
 import type { InsertJob } from "@shared/schema";
 
-// Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || "");
+// Initialize Gemini AI - with validation
+function initializeGemini() {
+  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  if (!apiKey) {
+    console.error("CRITICAL: GOOGLE_GENERATIVE_AI_API_KEY environment variable is not set!");
+    return null;
+  }
+  return new GoogleGenerativeAI(apiKey);
+}
+
+const genAI = initializeGemini();
 
 // Official government recruitment sources
 const OFFICIAL_SOURCES = {
@@ -139,60 +148,79 @@ function getCategoryForSource(source: string): string {
 // Extract jobs using Gemini AI
 async function extractJobsWithAI(htmlContent: string, source: string): Promise<InsertJob[]> {
   try {
-    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-      console.warn("Gemini API key not configured, skipping AI extraction");
+    if (!genAI) {
+      console.error("Gemini AI not initialized - API key missing");
       return [];
     }
 
+    console.log(`Extracting jobs from ${source} using Gemini AI...`);
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    const prompt = `Extract job listings from the following HTML content. Return a JSON array of job objects with these fields:
-- title (string): Job title
-- company (string): Company/Organization name
-- location (string): Job location
-- type (string): Job type (Full-time, Part-time, Contract, etc.)
-- deadline (string): Application deadline in YYYY-MM-DD format (estimate if not found)
-- description (string): Brief job description (max 200 chars)
-- salary (string): Salary range if mentioned, otherwise "Varies"
+    const prompt = `Extract job listings from the following HTML content. Return ONLY a valid JSON array with no other text. Each job object must have these fields:
+- title: Job title (string)
+- company: Company/Organization name (string)
+- location: Job location (string)
+- type: Job type like "Full-time" or "Part-time" (string)
+- deadline: Application deadline in YYYY-MM-DD format (string, estimate if not found)
+- description: Brief job description, max 200 characters (string)
+- salary: Salary range or "Varies" (string)
 
-Return ONLY a valid JSON array, no other text.
+If no jobs found, return empty array [].
 
-HTML Content:
+HTML Content (first 8000 chars):
 ${htmlContent.substring(0, 8000)}`;
 
     const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
+    
+    if (!result.response || !result.response.text) {
+      console.warn(`Empty response from Gemini for ${source}`);
+      return [];
+    }
+
+    const responseText = result.response.text().trim();
+    console.log(`Gemini response for ${source}: ${responseText.substring(0, 100)}...`);
 
     // Parse JSON from response
     const jsonMatch = responseText.match(/\[[\s\S]*\]/);
     if (!jsonMatch) {
-      console.warn(`No JSON found in Gemini response for ${source}`);
+      console.warn(`No JSON array found in Gemini response for ${source}`);
       return [];
     }
 
-    const extractedJobs = JSON.parse(jsonMatch[0]);
+    let extractedJobs: any[];
+    try {
+      extractedJobs = JSON.parse(jsonMatch[0]);
+    } catch (parseError) {
+      console.error(`Failed to parse JSON from ${source}:`, parseError);
+      return [];
+    }
+
+    if (!Array.isArray(extractedJobs)) {
+      console.warn(`Gemini response for ${source} is not an array`);
+      return [];
+    }
+
     const category = getCategoryForSource(source);
 
     // Map to InsertJob format
-    return extractedJobs
-      .filter((job: any) => job.title && job.company)
+    const mappedJobs = extractedJobs
+      .filter((job: any) => job && job.title && job.company)
       .slice(0, 5)
       .map((job: any) => ({
-        title: String(job.title).substring(0, 100),
-        company: String(job.company).substring(0, 100),
+        title: String(job.title || "").substring(0, 100),
+        company: String(job.company || "").substring(0, 100),
         location: String(job.location || source).substring(0, 100),
         type: String(job.type || "Full-time"),
         category,
-        deadline:
-          job.deadline ||
-          new Date(Date.now() + 60 * 24 * 60 * 60 * 1000)
-            .toISOString()
-            .split("T")[0],
+        deadline: job.deadline || new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
         description: String(job.description || `Jobs from ${source}`).substring(0, 200),
         salary: String(job.salary || "Varies"),
       }));
+
+    console.log(`Extracted ${mappedJobs.length} jobs from ${source}`);
+    return mappedJobs;
   } catch (error) {
-    console.error(`Error extracting jobs with AI from ${source}:`, error);
+    console.error(`Error extracting jobs with AI from ${source}:`, error instanceof Error ? error.message : String(error));
     return [];
   }
 }
@@ -246,17 +274,17 @@ export async function scrapeGovernmentJobs(): Promise<InsertJob[]> {
 
 export async function updateJobsFromOfficialSources(): Promise<number> {
   try {
-    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+    if (!genAI) {
       throw new Error(
         "Gemini API key not configured. Please set GOOGLE_GENERATIVE_AI_API_KEY environment variable."
       );
     }
 
-    console.log("Starting AI-powered job scraping...");
+    console.log("Starting AI-powered job scraping from official government sources...");
     const scrapedJobs = await scrapeGovernmentJobs();
 
     if (scrapedJobs.length === 0) {
-      console.warn("No jobs were extracted by AI");
+      console.warn("No jobs were extracted by AI - this may indicate fetch or parsing issues");
       return 0;
     }
 
@@ -265,12 +293,13 @@ export async function updateJobsFromOfficialSources(): Promise<number> {
       try {
         await storage.createJob(job);
         addedCount++;
+        console.log(`Added job: ${job.title} from ${job.company}`);
       } catch (error) {
-        console.error("Error saving job:", error);
+        console.error("Error saving job:", error instanceof Error ? error.message : String(error));
       }
     }
 
-    console.log(`Successfully added ${addedCount} jobs`);
+    console.log(`Successfully added ${addedCount} new jobs to database`);
     return addedCount;
   } catch (error) {
     console.error("Error updating jobs:", error);
