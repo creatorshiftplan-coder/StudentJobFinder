@@ -1,5 +1,7 @@
 import { useState, useContext, createContext, useEffect, type ReactNode } from "react";
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://cvnalogvvfzapxmozdyh.supabase.co";
+
 interface User {
   id: string;
   email: string;
@@ -25,67 +27,68 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const stored = localStorage.getItem("accessToken");
     if (stored) {
       setAccessToken(stored);
-      fetch("/api/profile", {
-        headers: { Authorization: `Bearer ${stored}` },
-      })
-        .then((res) => res.json())
-        .then((profile) => {
-          setUser({ id: profile.id, email: profile.email || "user" });
-        })
-        .catch(() => {
-          localStorage.removeItem("accessToken");
-          setAccessToken(null);
-        })
-        .finally(() => setLoading(false));
+      setUser({ id: stored.substring(0, 20), email: localStorage.getItem("userEmail") || "user" });
+      setLoading(false);
     } else {
       setLoading(false);
     }
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = await fetch("/api/auth/login", {
+    const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({
+        email,
+        password,
+      }),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || "Login failed");
+      throw new Error(error.error_description || error.error || "Login failed");
     }
 
-    const { user: authUser, session } = await response.json();
+    const { access_token, user: authUser } = await response.json();
     setUser({ id: authUser.id, email: authUser.email });
-    setAccessToken(session.access_token);
-    localStorage.setItem("accessToken", session.access_token);
+    setAccessToken(access_token);
+    localStorage.setItem("accessToken", access_token);
+    localStorage.setItem("userEmail", authUser.email);
   };
 
   const signup = async (email: string, password: string) => {
-    const response = await fetch("/api/auth/signup", {
+    const response = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({
+        email,
+        password,
+      }),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || "Signup failed");
+      throw new Error(error.error_description || error.error || "Signup failed");
     }
 
-    const { user: authUser, session } = await response.json();
+    const { access_token, user: authUser } = await response.json();
     setUser({ id: authUser.id, email: authUser.email });
-    setAccessToken(session.access_token);
-    localStorage.setItem("accessToken", session.access_token);
+    setAccessToken(access_token);
+    localStorage.setItem("accessToken", access_token);
+    localStorage.setItem("userEmail", authUser.email);
   };
 
   const logout = () => {
     setUser(null);
     setAccessToken(null);
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("userEmail");
   };
 
+  const value = { user, loading, accessToken, login, signup, logout };
+
   return (
-    <AuthContext.Provider value={{ user, loading, accessToken, login, signup, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

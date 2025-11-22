@@ -8,6 +8,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { BottomNav } from "@/components/BottomNav";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
 
 import Dashboard from "@/pages/dashboard";
 import Profile from "@/pages/profile";
@@ -16,9 +17,27 @@ import Signature from "@/pages/signature";
 import Photo from "@/pages/photo";
 import Jobs from "@/pages/jobs";
 import Applications from "@/pages/applications";
+import Auth from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 
-function Router() {
+function ProtectedRouter() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Auth />;
+  }
+
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
@@ -33,32 +52,45 @@ function Router() {
   );
 }
 
-function App() {
+function AppContent() {
+  const { user } = useAuth();
   const style = {
     "--sidebar-width": "16rem",
     "--sidebar-width-icon": "3rem",
   };
 
+  if (!user) {
+    return <Auth />;
+  }
+
+  return (
+    <SidebarProvider style={style as React.CSSProperties}>
+      <div className="flex h-screen w-full">
+        <AppSidebar />
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <header className="flex items-center justify-between p-4 border-b">
+            <SidebarTrigger data-testid="button-sidebar-toggle" />
+            <ThemeToggle />
+          </header>
+          <main className="flex-1 overflow-auto p-6 md:p-8 pb-20 md:pb-8">
+            <ProtectedRouter />
+          </main>
+        </div>
+      </div>
+      <BottomNav />
+    </SidebarProvider>
+  );
+}
+
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
-          <SidebarProvider style={style as React.CSSProperties}>
-            <div className="flex h-screen w-full">
-              <AppSidebar />
-              <div className="flex flex-col flex-1 overflow-hidden">
-                <header className="flex items-center justify-between p-4 border-b">
-                  <SidebarTrigger data-testid="button-sidebar-toggle" />
-                  <ThemeToggle />
-                </header>
-                <main className="flex-1 overflow-auto p-6 md:p-8 pb-20 md:pb-8">
-                  <Router />
-                </main>
-              </div>
-            </div>
-            <BottomNav />
-          </SidebarProvider>
-          <Toaster />
+          <AuthProvider>
+            <AppContent />
+            <Toaster />
+          </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
