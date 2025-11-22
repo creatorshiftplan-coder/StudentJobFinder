@@ -12,6 +12,7 @@ export interface StudentProfile {
   skills: string;
   experience: string;
   photoUrl?: string;
+  profileData?: string; // JSON string with detailed profile info
   createdAt: string;
   updatedAt: string;
 }
@@ -26,9 +27,22 @@ export const insertStudentProfileSchema = z.object({
   skills: z.string(),
   experience: z.string(),
   photoUrl: z.string().optional(),
+  profileData: z.string().optional(),
 });
 
 export type InsertStudentProfile = z.infer<typeof insertStudentProfileSchema>;
+
+export const REQUIRED_DOCUMENTS = [
+  "Photo (Recent Passport Size)",
+  "Signature",
+  "Thumb Impression (if required)",
+  "10th Marksheet / Certificate",
+  "12th Marksheet / Certificate",
+  "Graduation Certificate / Diploma",
+  "Caste / EWS / PwD certificates",
+  "Experience certificate (if applicable)",
+  "Identity proof scan (Aadhaar / PAN / Voter ID / Passport / DL)",
+];
 
 // Document Schema
 export interface Document {

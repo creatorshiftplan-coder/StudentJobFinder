@@ -3,11 +3,12 @@ import { DocumentItem } from "@/components/DocumentItem";
 import { EmptyState } from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, FileText, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Upload, FileText, Loader2, CheckCircle2 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { Document, StudentProfile } from "@shared/schema";
+import type { Document, StudentProfile, REQUIRED_DOCUMENTS } from "@shared/schema";
 
 export default function Documents() {
   const { toast } = useToast();
@@ -89,6 +90,8 @@ export default function Documents() {
     }
   };
 
+  const requiredDocs = ["Photo (Recent Passport Size)", "Signature", "Thumb Impression (if required)", "10th Marksheet / Certificate", "12th Marksheet / Certificate", "Graduation Certificate / Diploma", "Caste / EWS / PwD certificates", "Experience certificate (if applicable)", "Identity proof scan (Aadhaar / PAN / Voter ID / Passport / DL)"];
+  
   const hasDocuments = documents.length > 0;
 
   if (isLoading) {
@@ -111,12 +114,13 @@ export default function Documents() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold" data-testid="text-page-title">Documents</h1>
-          <p className="text-muted-foreground mt-2">Upload and manage your certificates and documents</p>
+          <p className="text-muted-foreground mt-2">Upload required certificates and documents</p>
         </div>
         <Button
           data-testid="button-upload-document"
           onClick={handleUploadClick}
           disabled={uploadMutation.isPending || !profile}
+          className="px-6 py-2 text-base font-semibold"
         >
           {uploadMutation.isPending ? (
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -126,6 +130,33 @@ export default function Documents() {
           Upload
         </Button>
       </div>
+
+      <Card className="p-6 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+        <div>
+          <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Required Documents Checklist
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {requiredDocs.map((doc) => {
+              const isUploaded = documents.some(d => d.name.toLowerCase().includes(doc.toLowerCase()));
+              return (
+                <div key={doc} className="flex items-center gap-2 p-2 rounded bg-white dark:bg-slate-800">
+                  {isUploaded ? (
+                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  ) : (
+                    <div className="h-5 w-5 border-2 border-gray-300 rounded-full" />
+                  )}
+                  <span className={isUploaded ? "text-green-700 dark:text-green-400 font-medium" : "text-muted-foreground"}>
+                    {doc}
+                  </span>
+                  {isUploaded && <Badge variant="secondary" className="ml-auto text-xs">Done</Badge>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </Card>
 
       {!hasDocuments ? (
         <Card className="p-6">

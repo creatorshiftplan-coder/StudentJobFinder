@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Camera, Save, Loader2 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -25,6 +26,57 @@ export default function Profile() {
     skills: "",
     experience: "",
     photoUrl: "",
+    // Personal Details
+    fathersName: "",
+    mothersName: "",
+    gender: "",
+    maritalStatus: "",
+    nationality: "",
+    category: "",
+    disabilityStatus: "",
+    disabilityType: "",
+    minorityStatus: "",
+    identificationIssueType: "",
+    identificationNumber: "",
+    // Contact Information
+    mobileNumber: "",
+    correspondenceAddress: "",
+    state: "",
+    district: "",
+    pinCode: "",
+    // Educational Qualification
+    highestQualification: "",
+    courseName: "",
+    boardUniversity: "",
+    dateOfPassing: "",
+    rollNumber: "",
+    percentageCGPA: "",
+    stream: "",
+    additionalQualifications: "",
+    // Employment Experience
+    workExperience: "",
+    organizationName: "",
+    jobTitle: "",
+    startDate: "",
+    endDate: "",
+    totalExperience: "",
+    salary: "",
+    // Reservation & Certificates
+    casteCertificateNumber: "",
+    casteCertificateIssueDate: "",
+    casteCertificateAuthority: "",
+    ewsCertificateNumber: "",
+    pwdMedicalCertificate: "",
+    nccCertificate: "",
+    exServicemanDetails: "",
+    domicileCertificate: "",
+    // Exam Specific
+    examCenterPreference: "",
+    postPreference: "",
+    languagePreference: "",
+    shiftPreference: "",
+    // Declarations
+    selfDeclaration: "",
   });
 
   const { data: profile, isLoading } = useQuery<StudentProfile>({
@@ -33,6 +85,7 @@ export default function Profile() {
 
   useEffect(() => {
     if (profile) {
+      const profileData = profile.profileData ? JSON.parse(profile.profileData) : {};
       setFormData({
         fullName: profile.fullName || "",
         email: profile.email || "",
@@ -43,6 +96,7 @@ export default function Profile() {
         skills: profile.skills || "",
         experience: profile.experience || "",
         photoUrl: profile.photoUrl || "",
+        ...profileData,
       });
     }
   }, [profile]);
@@ -111,16 +165,18 @@ export default function Profile() {
   };
 
   const handleSave = () => {
+    const { fullName, email, phone, dateOfBirth, address, education, skills, experience, photoUrl, ...profileDataFields } = formData;
     const data: InsertStudentProfile = {
-      fullName: formData.fullName,
-      email: formData.email,
-      phone: formData.phone,
-      dateOfBirth: formData.dateOfBirth,
-      address: formData.address,
-      education: formData.education,
-      skills: formData.skills,
-      experience: formData.experience,
-      photoUrl: formData.photoUrl,
+      fullName,
+      email,
+      phone,
+      dateOfBirth,
+      address,
+      education,
+      skills,
+      experience,
+      photoUrl,
+      profileData: JSON.stringify(profileDataFields),
     };
 
     if (profile) {
@@ -179,118 +235,122 @@ export default function Profile() {
           </div>
         </div>
 
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name</Label>
-              <Input
-                id="fullName"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                data-testid="input-full-name"
-              />
+        <Tabs defaultValue="personal" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 gap-1 h-auto bg-transparent p-0">
+            <TabsTrigger value="personal" className="px-3 py-2 text-xs md:text-sm font-semibold rounded-lg">Personal</TabsTrigger>
+            <TabsTrigger value="contact" className="px-3 py-2 text-xs md:text-sm font-semibold rounded-lg">Contact</TabsTrigger>
+            <TabsTrigger value="education" className="px-3 py-2 text-xs md:text-sm font-semibold rounded-lg">Education</TabsTrigger>
+            <TabsTrigger value="experience" className="px-3 py-2 text-xs md:text-sm font-semibold rounded-lg">Experience</TabsTrigger>
+            <TabsTrigger value="reservation" className="px-3 py-2 text-xs md:text-sm font-semibold rounded-lg">Reservation</TabsTrigger>
+            <TabsTrigger value="exam" className="px-3 py-2 text-xs md:text-sm font-semibold rounded-lg">Exam</TabsTrigger>
+            <TabsTrigger value="declaration" className="px-3 py-2 text-xs md:text-sm font-semibold rounded-lg">Declaration</TabsTrigger>
+          </TabsList>
+
+          {/* Personal Details Tab */}
+          <TabsContent value="personal" className="mt-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2"><Label>Full Name (as per 10th certificate)</Label><Input name="fullName" value={formData.fullName} onChange={handleChange} data-testid="input-full-name" /></div>
+              <div className="space-y-2"><Label>Father's Name</Label><Input name="fathersName" value={formData.fathersName} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Mother's Name</Label><Input name="mothersName" value={formData.mothersName} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Date of Birth</Label><Input name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={handleChange} data-testid="input-dob" /></div>
+              <div className="space-y-2"><Label>Gender</Label><Input name="gender" value={formData.gender} onChange={handleChange} placeholder="Male / Female / Other" /></div>
+              <div className="space-y-2"><Label>Marital Status</Label><Input name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} placeholder="Single / Married" /></div>
+              <div className="space-y-2"><Label>Nationality</Label><Input name="nationality" value={formData.nationality} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Category</Label><Input name="category" value={formData.category} onChange={handleChange} placeholder="UR / OBC / SC / ST / EWS" /></div>
+              <div className="space-y-2"><Label>Disability Status</Label><Input name="disabilityStatus" value={formData.disabilityStatus} onChange={handleChange} placeholder="Yes / No" /></div>
+              <div className="space-y-2"><Label>Disability Type (if applicable)</Label><Input name="disabilityType" value={formData.disabilityType} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Minority Status (if applicable)</Label><Input name="minorityStatus" value={formData.minorityStatus} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Identification Type</Label><Input name="identificationIssueType" value={formData.identificationIssueType} onChange={handleChange} placeholder="Aadhaar / PAN / Voter ID / Passport / DL" /></div>
+              <div className="space-y-2"><Label>Identification Number</Label><Input name="identificationNumber" value={formData.identificationNumber} onChange={handleChange} /></div>
             </div>
+          </TabsContent>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                data-testid="input-email"
-              />
+          {/* Contact Information Tab */}
+          <TabsContent value="contact" className="mt-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2"><Label>Mobile Number</Label><Input name="mobileNumber" value={formData.mobileNumber} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Email ID</Label><Input name="email" type="email" value={formData.email} onChange={handleChange} data-testid="input-email" /></div>
+              <div className="space-y-2 md:col-span-2"><Label>Permanent Address</Label><Textarea name="address" value={formData.address} onChange={handleChange} rows={2} data-testid="input-address" /></div>
+              <div className="space-y-2 md:col-span-2"><Label>Correspondence Address (if different)</Label><Textarea name="correspondenceAddress" value={formData.correspondenceAddress} onChange={handleChange} rows={2} /></div>
+              <div className="space-y-2"><Label>State</Label><Input name="state" value={formData.state} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>District</Label><Input name="district" value={formData.district} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>PIN Code</Label><Input name="pinCode" value={formData.pinCode} onChange={handleChange} /></div>
             </div>
+          </TabsContent>
 
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                data-testid="input-phone"
-              />
+          {/* Educational Qualification Tab */}
+          <TabsContent value="education" className="mt-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2"><Label>Highest Qualification</Label><Input name="highestQualification" value={formData.highestQualification} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Course / Degree Name</Label><Input name="courseName" value={formData.courseName} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Board / University</Label><Input name="boardUniversity" value={formData.boardUniversity} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Date of Passing</Label><Input name="dateOfPassing" type="date" value={formData.dateOfPassing} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Roll Number / Registration Number</Label><Input name="rollNumber" value={formData.rollNumber} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Percentage / CGPA</Label><Input name="percentageCGPA" value={formData.percentageCGPA} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Stream / Subjects</Label><Input name="stream" value={formData.stream} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Additional Qualifications</Label><Input name="additionalQualifications" value={formData.additionalQualifications} onChange={handleChange} placeholder="Computer / Diploma / ITI etc." /></div>
             </div>
+          </TabsContent>
 
-            <div className="space-y-2">
-              <Label htmlFor="dateOfBirth">Date of Birth</Label>
-              <Input
-                id="dateOfBirth"
-                name="dateOfBirth"
-                type="date"
-                value={formData.dateOfBirth}
-                onChange={handleChange}
-                data-testid="input-dob"
-              />
+          {/* Employment Experience Tab */}
+          <TabsContent value="experience" className="mt-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2"><Label>Work Experience</Label><Input name="workExperience" value={formData.workExperience} onChange={handleChange} placeholder="Yes / No" /></div>
+              <div className="space-y-2"><Label>Organization Name</Label><Input name="organizationName" value={formData.organizationName} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Job Title / Post Held</Label><Input name="jobTitle" value={formData.jobTitle} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Start Date</Label><Input name="startDate" type="date" value={formData.startDate} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>End Date</Label><Input name="endDate" type="date" value={formData.endDate} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Total Experience (months/years)</Label><Input name="totalExperience" value={formData.totalExperience} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Salary / Pay Level</Label><Input name="salary" value={formData.salary} onChange={handleChange} /></div>
             </div>
-          </div>
+          </TabsContent>
 
-          <div className="space-y-2">
-            <Label htmlFor="address">Address</Label>
-            <Textarea
-              id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              rows={2}
-              data-testid="input-address"
-            />
-          </div>
+          {/* Reservation & Certificates Tab */}
+          <TabsContent value="reservation" className="mt-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2"><Label>Caste Certificate Number</Label><Input name="casteCertificateNumber" value={formData.casteCertificateNumber} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Caste Certificate Issue Date</Label><Input name="casteCertificateIssueDate" type="date" value={formData.casteCertificateIssueDate} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Issuing Authority</Label><Input name="casteCertificateAuthority" value={formData.casteCertificateAuthority} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>EWS Certificate Number</Label><Input name="ewsCertificateNumber" value={formData.ewsCertificateNumber} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>PwD Medical Certificate</Label><Input name="pwdMedicalCertificate" value={formData.pwdMedicalCertificate} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>NCC Certificate</Label><Input name="nccCertificate" value={formData.nccCertificate} onChange={handleChange} /></div>
+              <div className="space-y-2 md:col-span-2"><Label>Ex-Serviceman Details (Service Duration, Discharge Book No.)</Label><Textarea name="exServicemanDetails" value={formData.exServicemanDetails} onChange={handleChange} rows={2} /></div>
+              <div className="space-y-2 md:col-span-2"><Label>Domicile Certificate</Label><Textarea name="domicileCertificate" value={formData.domicileCertificate} onChange={handleChange} rows={2} /></div>
+            </div>
+          </TabsContent>
 
-          <div className="space-y-2">
-            <Label htmlFor="education">Education</Label>
-            <Textarea
-              id="education"
-              name="education"
-              value={formData.education}
-              onChange={handleChange}
-              rows={3}
-              data-testid="input-education"
-            />
-          </div>
+          {/* Exam / Application-Specific Tab */}
+          <TabsContent value="exam" className="mt-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2"><Label>Exam Center Preference (City)</Label><Input name="examCenterPreference" value={formData.examCenterPreference} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Post Preference (if multiple)</Label><Input name="postPreference" value={formData.postPreference} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Language Preference</Label><Input name="languagePreference" value={formData.languagePreference} onChange={handleChange} /></div>
+              <div className="space-y-2"><Label>Shift Preference (if applicable)</Label><Input name="shiftPreference" value={formData.shiftPreference} onChange={handleChange} /></div>
+            </div>
+          </TabsContent>
 
-          <div className="space-y-2">
-            <Label htmlFor="skills">Skills</Label>
-            <Textarea
-              id="skills"
-              name="skills"
-              value={formData.skills}
-              onChange={handleChange}
-              rows={2}
-              placeholder="e.g., JavaScript, Python, Communication"
-              data-testid="input-skills"
-            />
-          </div>
+          {/* Final Declarations Tab */}
+          <TabsContent value="declaration" className="mt-6 space-y-6">
+            <div className="space-y-2">
+              <Label>Self Declaration</Label>
+              <Textarea name="selfDeclaration" value={formData.selfDeclaration} onChange={handleChange} rows={5} placeholder="Enter your self declaration here..." />
+            </div>
+          </TabsContent>
+        </Tabs>
 
-          <div className="space-y-2">
-            <Label htmlFor="experience">Work Experience</Label>
-            <Textarea
-              id="experience"
-              name="experience"
-              value={formData.experience}
-              onChange={handleChange}
-              rows={3}
-              data-testid="input-experience"
-            />
-          </div>
-
-          <Button
-            onClick={handleSave}
-            className="w-full md:w-auto"
-            data-testid="button-save-profile"
-            disabled={createProfileMutation.isPending || updateProfileMutation.isPending}
-          >
-            {(createProfileMutation.isPending || updateProfileMutation.isPending) ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4 mr-2" />
-            )}
-            Save Profile
-          </Button>
-        </div>
+        <Button
+          onClick={handleSave}
+          className="w-full mt-6 px-6 py-2 text-base font-semibold"
+          data-testid="button-save-profile"
+          disabled={createProfileMutation.isPending || updateProfileMutation.isPending}
+        >
+          {(createProfileMutation.isPending || updateProfileMutation.isPending) ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4 mr-2" />
+          )}
+          Save All Changes
+        </Button>
       </Card>
     </div>
   );
