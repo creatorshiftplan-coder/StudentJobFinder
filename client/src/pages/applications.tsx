@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Application, StudentProfile, Job, Exam } from "@shared/schema";
 
 export default function Applications() {
+  const [activeSection, setActiveSection] = useState<"applications" | "listings">("applications");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isExamDialogOpen, setIsExamDialogOpen] = useState(false);
   const [examData, setExamData] = useState({ jobTitle: "", company: "", examDate: "", examTime: "", status: "pending" });
@@ -150,10 +151,41 @@ export default function Applications() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl md:text-4xl font-bold" data-testid="text-page-title">My Activity</h1>
-        <p className="text-muted-foreground mt-2">Track applications and exam schedule</p>
+        <p className="text-muted-foreground mt-2">Track applications and browse job listings</p>
       </div>
 
-      <div>
+      <div className="flex gap-3 border-b pb-0">
+        <button
+          onClick={() => setActiveSection("applications")}
+          className={`px-6 py-3 font-semibold text-lg border-b-4 transition-all hover-elevate ${
+            activeSection === "applications"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+          data-testid="button-section-applications"
+        >
+          <div className="flex items-center gap-2">
+            <ClipboardList className="h-5 w-5" />
+            Applications ({applications.length})
+          </div>
+        </button>
+        <button
+          onClick={() => setActiveSection("listings")}
+          className={`px-6 py-3 font-semibold text-lg border-b-4 transition-all hover-elevate ${
+            activeSection === "listings"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+          data-testid="button-section-listings"
+        >
+          <div className="flex items-center gap-2">
+            <Briefcase className="h-5 w-5" />
+            Job Listings
+          </div>
+        </button>
+      </div>
+
+      {activeSection === "applications" && (
         <div className="space-y-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3 flex-1 min-w-[250px]">
@@ -315,6 +347,40 @@ export default function Applications() {
         </div>
       )}
 
+      {activeSection === "listings" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">Browse Jobs</h2>
+            <span className="text-sm text-muted-foreground">{jobsWithApplicationStatus.length} total jobs</span>
+          </div>
+
+          {jobsWithApplicationStatus.length === 0 ? (
+            <Card className="p-6">
+              <EmptyState
+                title="No jobs available"
+                description="Check back later for new job opportunities"
+                icon={Briefcase}
+              />
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {jobsWithApplicationStatus.map((job) => (
+                <div key={job.id} className="relative">
+                  <JobCard 
+                    job={job}
+                    onApply={(jobId) => console.log('Apply:', jobId)}
+                  />
+                  {job.applied && job.applicationStatus && (
+                    <div className="absolute top-4 right-4 bg-primary text-primary-foreground text-xs font-medium px-2 py-1 rounded">
+                      {job.applicationStatus.replace(/_/g, " ")}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
