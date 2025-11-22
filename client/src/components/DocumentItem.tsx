@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Download, Eye, Trash2 } from "lucide-react";
+import { FileText, Download, Eye, Trash2, Zap } from "lucide-react";
 
 export interface Document {
   id: string;
@@ -16,9 +16,13 @@ interface DocumentItemProps {
   onView?: (id: string) => void;
   onDownload?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onExtractOCR?: (id: string) => void;
+  isExtractingOCR?: boolean;
 }
 
-export function DocumentItem({ document, onView, onDownload, onDelete }: DocumentItemProps) {
+export function DocumentItem({ document, onView, onDownload, onDelete, onExtractOCR, isExtractingOCR }: DocumentItemProps) {
+  const isImage = ['jpg', 'jpeg', 'png', 'pdf'].some(ext => document.type.toLowerCase().includes(ext));
+
   return (
     <Card className="p-4" data-testid={`card-document-${document.id}`}>
       <div className="flex items-center gap-4">
@@ -36,6 +40,22 @@ export function DocumentItem({ document, onView, onDownload, onDelete }: Documen
         </div>
 
         <div className="flex items-center gap-1 flex-shrink-0">
+          {isImage && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onExtractOCR?.(document.id)}
+              disabled={isExtractingOCR}
+              title="Extract data using AI"
+              data-testid={`button-extract-ocr-${document.id}`}
+            >
+              {isExtractingOCR ? (
+                <div className="h-4 w-4 animate-spin border-2 border-primary border-t-transparent rounded-full" />
+              ) : (
+                <Zap className="h-4 w-4" />
+              )}
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"

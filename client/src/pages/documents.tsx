@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { DocumentItem } from "@/components/DocumentItem";
 import { EmptyState } from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,8 @@ import { Upload, FileText, Loader2, CheckCircle2 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { Document, StudentProfile, REQUIRED_DOCUMENTS } from "@shared/schema";
+import { OCRVerificationModal } from "@/components/ocr-verification-modal";
+import type { Document, StudentProfile } from "@shared/schema";
 
 // Smart document matching with keyword detection
 function smartDocumentMatch(uploadedFileName: string, requiredDocType: string): boolean {
@@ -66,6 +67,9 @@ function smartDocumentMatch(uploadedFileName: string, requiredDocType: string): 
 export default function Documents() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [ocrModalOpen, setOcrModalOpen] = useState(false);
+  const [ocrData, setOcrData] = useState<Record<string, string> | null>(null);
+  const [extractingDocId, setExtractingDocId] = useState<string | null>(null);
 
   const { data: profile } = useQuery<StudentProfile>({
     queryKey: ["/api/profile"],
@@ -126,6 +130,60 @@ export default function Documents() {
     },
   });
 
+  const ocrMutation = useMutation({
+    mutationFn: async (imageUrl: string) => {
+      const response = await fetch("/api/documents/extract-ocr", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl }),
+      });
+      if (!response.ok) throw new Error("Failed to extract data");
+      const result = await response.json();
+      return result.data;
+    },
+    onSuccess: (data) => {
+      setOcrData(data);
+      setOcrModalOpen(true);
+      setExtractingDocId(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to extract data from document",
+        variant: "destructive",
+      });
+      setExtractingDocId(null);
+    },
+  });
+
+  const profileUpdateMutation = useMutation({
+    mutationFn: async (updates: Record<string, any>) => {
+      const response = await fetch(`/api/profile/${profile!.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+      if (!response.ok) throw new Error("Failed to update profile");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
+      toast({
+        title: "Success",
+        description: "Profile updated with extracted information",
+      });
+      setOcrModalOpen(false);
+      setOcrData(null);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update profile",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && profile) {
@@ -141,6 +199,34 @@ export default function Documents() {
     if (confirm("Are you sure you want to delete this document?")) {
       deleteMutation.mutate(id);
     }
+  };
+
+  const handleExtractOCR = (docId: string) => {
+    const doc = documents.find(d => d.id === docId);
+    if (doc && doc.url) {
+      setExtractingDocId(docId);
+      ocrMutation.mutate(doc.url);
+    }
+  };
+
+  const handleConfirmOCR = (verifiedData: Record<string, string>) => {
+    if (!profile) return;
+
+    // Map extracted data to profile fields
+    const profileUpdates: Record<string, any> = {};
+    
+    if (verifiedData.fullName) profileUpdates.fullName = verifiedData.fullName;
+    if (verifiedData.email) profileUpdates.email = verifiedData.email;
+    if (verifiedData.mobileNumber) profileUpdates.phone = verifiedData.mobileNumber;
+    if (verifiedData.dateOfBirth) profileUpdates.dateOfBirth = verifiedData.dateOfBirth;
+    if (verifiedData.address) profileUpdates.address = verifiedData.address;
+
+    // Store detailed profile data as JSON
+    const detailedData = profile.profileData ? JSON.parse(profile.profileData) : {};
+    Object.assign(detailedData, verifiedData);
+    profileUpdates.profileData = JSON.stringify(detailedData);
+
+    profileUpdateMutation.mutate(profileUpdates);
   };
 
   const requiredDocs = ["Photo (Recent Passport Size)", "Signature", "Thumb Impression (if required)", "10th Marksheet / Certificate", "12th Marksheet / Certificate", "Graduation Certificate / Diploma", "Caste / EWS / PwD certificates", "Experience certificate (if applicable)", "Identity proof scan (Aadhaar / PAN / Voter ID / Passport / DL)"];
@@ -164,6 +250,18 @@ export default function Documents() {
         className="hidden"
         onChange={handleFileSelect}
       />
+
+      <OCRVerificationModal
+        isOpen={ocrModalOpen}
+        isLoading={ocrMutation.isPending}
+        extractedData={ocrData}
+        onConfirm={handleConfirmOCR}
+        onCancel={() => {
+          setOcrModalOpen(false);
+          setOcrData(null);
+        }}
+      />
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold" data-testid="text-page-title">Documents</h1>
@@ -244,6 +342,8 @@ export default function Documents() {
               <DocumentItem
                 key={doc.id}
                 document={doc}
+                isExtractingOCR={extractingDocId === doc.id}
+                onExtractOCR={handleExtractOCR}
                 onView={(id) => window.open(documents.find(d => d.id === id)?.url, '_blank')}
                 onDownload={(id) => {
                   const doc = documents.find(d => d.id === id);
