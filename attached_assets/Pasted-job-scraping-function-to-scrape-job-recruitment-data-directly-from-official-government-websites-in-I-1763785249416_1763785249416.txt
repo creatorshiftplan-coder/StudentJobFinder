@@ -1,0 +1,80 @@
+job scraping function to scrape job recruitment data directly from official government websites in India (Central, PSU, Banking, Defence, and State PSC portals).
+
+Add scrapers for the following official sources:
+
+CENTRAL GOVERNMENT RECRUITMENT SITES
+1. https://www.upsc.gov.in
+2. https://www.ssc.nic.in
+3. https://www.rrbcdg.gov.in (Railway Recruitment Boards Portal)
+4. https://www.ibps.in (Bank exams & recruitment)
+5. https://opportunities.rbi.org.in
+6. https://sbi.co.in/careers
+7. https://indiapostgdsonline.gov.in
+8. https://www.drdo.gov.in
+9. https://www.isro.gov.in/Careers.html
+10. https://recruit.barc.gov.in
+11. https://www.aiimsexams.ac.in
+12. https://www.esic.nic.in
+13. https://www.fci.gov.in / https://recruitmentfci.in
+14. https://coalindia.in/en-us/careers
+15. https://www.bsnl.co.in/opportunities
+16. https://www.licindia.in/careers
+17. https://ucil.gov.in/job.html
+18. https://www.aai.aero/en/careers
+19. https://www.ntpc.co.in/en/careers
+20. https://www.bhel.com/careers/current-openings
+21. https://www.hpclcareers.com
+22. https://www.indianoil.co.in/careers
+23. https://careers.bhel.in
+24. https://recruitment.itbpolice.nic.in
+25. https://rectt.bsf.gov.in
+26. https://cisfrectt.cisf.gov.in
+27. https://assamrifles.gov.in
+28. https://www.mha.gov.in (CAPF notifications)
+29. https://www.naukriyarojgar.com (official labour ministry)
+
+STATE PSC / STATE GOVERNMENT RECRUITMENT SITES
+1. https://wbpsc.gov.in (West Bengal)
+2. https://uppsc.up.nic.in (Uttar Pradesh)
+3. https://bpsc.bih.nic.in (Bihar)
+4. https://rpsc.rajasthan.gov.in (Rajasthan)
+5. https://mpsc.gov.in (Maharashtra)
+6. https://gpsc.gujarat.gov.in (Gujarat)
+7. https://www.tnpsc.gov.in (Tamil Nadu)
+8. https://www.kpsc.kar.nic.in (Karnataka)
+9. https://www.tspsc.gov.in (Telangana)
+10. https://psc.ap.gov.in (Andhra Pradesh)
+11. https://www.opsc.gov.in (Odisha)
+12. https://www.keralapsc.gov.in (Kerala)
+13. https://hpsc.gov.in (Haryana)
+14. https://hppsc.hp.gov.in (Himachal Pradesh)
+15. https://ukpsc.net.in (Uttarakhand)
+16. https://jkpsc.nic.in (Jammu & Kashmir)
+17. https://mppsc.mp.gov.in (Madhya Pradesh)
+18. https://jharkhand.gov.in/recruitment (Jharkhand govt)
+19. https://www.tpsc.tripura.gov.in (Tripura)
+20. https://www.apsc.nic.in (Assam)
+21. https://ppsc.gov.in (Punjab)
+22. https://gpsc.goa.gov.in (Goa)
+23. https://www.spscskm.gov.in (Sikkim)
+24. https://www.mpscmanipur.gov.in (Manipur)
+25. http://mpsc.mizoram.gov.in (Mizoram)
+26. https://nlpsc.nic.in (Nagaland)
+27. https://www.arunachalpradesh.gov.in (Arunachal Pradesh)
+28. https://cgpsc.gov.in (Chhattisgarh)
+29. https://www.tnusrb.tn.gov.in (TN Police recruitment)
+30. https://trb.tn.gov.in (Tamil Nadu Teaching board)
+31. https://www.hssc.gov.in (Haryana Staff Selection)
+32. https://dsssb.delhi.gov.in (Delhi Subordinate Services Board)
+
+
+
+And delete the job scrapping websites of the following 
+
+3. https://www.sarkariresult.com
+4. https://www.freejobalert.com
+5. https://www.mysarkarinaukri.com
+6. https://www.sarkarinaukri.com
+7. https://www.govtjobs.co.in
+8. https://www.jagranjosh.com/government-jobs
+

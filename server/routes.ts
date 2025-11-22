@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import multer from "multer";
 import sharp from "sharp";
 import { OpenAI } from "openai";
+import { updateJobsFromOfficialSources } from "./scrapers";
 import {
   insertStudentProfileSchema,
   insertDocumentSchema,
@@ -220,6 +221,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Scrape and update jobs from official government sources
+  app.post("/api/jobs/scrape-official", async (req, res) => {
+    try {
+      const count = await updateJobsFromOfficialSources();
+      res.json({ 
+        message: `Successfully scraped and added ${count} jobs from official government sources`,
+        count,
+      });
+    } catch (error: any) {
+      console.error("Scraping error:", error);
+      res.status(500).json({ error: "Failed to scrape official job sources" });
+    }
+  });
+
   app.get("/api/jobs/:id", async (req, res) => {
     try {
       const { id } = req.params;
@@ -341,37 +356,41 @@ Example response format:
 
   // Seed some initial job data for testing
   const seedJobs = async () => {
-    const existingJobs = await storage.getAllJobs();
-    if (existingJobs.length === 0) {
-      await storage.createJob({
-        title: "Software Engineer",
-        company: "Tech Solutions Ltd",
-        location: "Bangalore, India",
-        type: "Full-time",
-        deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        description: "We are seeking a talented Software Engineer to join our team.",
-        salary: "₹8-12 LPA",
-      });
+    try {
+      const existingJobs = await storage.getAllJobs();
+      if (existingJobs.length === 0) {
+        await storage.createJob({
+          title: "Software Engineer",
+          company: "Tech Solutions Ltd",
+          location: "Bangalore, India",
+          type: "Full-time",
+          deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          description: "We are seeking a talented Software Engineer to join our team.",
+          salary: "₹8-12 LPA",
+        });
 
-      await storage.createJob({
-        title: "Data Analyst",
-        company: "Analytics Corp",
-        location: "Hyderabad, India",
-        type: "Full-time",
-        deadline: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        description: "Looking for a skilled Data Analyst to help us make data-driven decisions.",
-        salary: "₹6-9 LPA",
-      });
+        await storage.createJob({
+          title: "Data Analyst",
+          company: "Analytics Corp",
+          location: "Hyderabad, India",
+          type: "Full-time",
+          deadline: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          description: "Looking for a skilled Data Analyst to help us make data-driven decisions.",
+          salary: "₹6-9 LPA",
+        });
 
-      await storage.createJob({
-        title: "Frontend Developer",
-        company: "WebDev Studios",
-        location: "Mumbai, India",
-        type: "Contract",
-        deadline: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        description: "Join our creative team to build beautiful web applications.",
-        salary: "₹7-10 LPA",
-      });
+        await storage.createJob({
+          title: "Frontend Developer",
+          company: "WebDev Studios",
+          location: "Mumbai, India",
+          type: "Contract",
+          deadline: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          description: "Join our creative team to build beautiful web applications.",
+          salary: "₹7-10 LPA",
+        });
+      }
+    } catch (error) {
+      console.error("Error seeding jobs:", error);
     }
   };
 
