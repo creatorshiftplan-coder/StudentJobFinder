@@ -41,16 +41,6 @@ const menuItems = [
     icon: FileText,
   },
   {
-    title: "Signature",
-    url: "/signature",
-    icon: PenTool,
-  },
-  {
-    title: "Photo",
-    url: "/photo",
-    icon: Camera,
-  },
-  {
     title: "Jobs",
     url: "/jobs",
     icon: Briefcase,
