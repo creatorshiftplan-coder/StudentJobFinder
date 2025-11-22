@@ -288,7 +288,7 @@ export default function Profile() {
               onClick={() => setExpandedSection(expandedSection === "personal" ? "" : "personal")}
               className="w-full flex items-center justify-between px-5 py-3 bg-secondary hover-elevate"
             >
-              <span className="text-sm md:text-base font-semibold">Personal</span>
+              <span className="text-sm md:text-base font-semibold">Personal Information</span>
               <ChevronDown className={`h-5 w-5 transition-transform ${expandedSection === "personal" ? "rotate-180" : ""}`} />
             </button>
             {expandedSection === "personal" && (
@@ -318,7 +318,7 @@ export default function Profile() {
               onClick={() => setExpandedSection(expandedSection === "contact" ? "" : "contact")}
               className="w-full flex items-center justify-between px-5 py-3 bg-secondary hover-elevate"
             >
-              <span className="text-sm md:text-base font-semibold">Contact</span>
+              <span className="text-sm md:text-base font-semibold">Contact Information</span>
               <ChevronDown className={`h-5 w-5 transition-transform ${expandedSection === "contact" ? "rotate-180" : ""}`} />
             </button>
             {expandedSection === "contact" && (
@@ -342,7 +342,7 @@ export default function Profile() {
               onClick={() => setExpandedSection(expandedSection === "education" ? "" : "education")}
               className="w-full flex items-center justify-between px-5 py-3 bg-secondary hover-elevate"
             >
-              <span className="text-sm md:text-base font-semibold">Education</span>
+              <span className="text-sm md:text-base font-semibold">Educational Qualifications</span>
               <ChevronDown className={`h-5 w-5 transition-transform ${expandedSection === "education" ? "rotate-180" : ""}`} />
             </button>
             {expandedSection === "education" && (
@@ -456,7 +456,7 @@ export default function Profile() {
               onClick={() => setExpandedSection(expandedSection === "experience" ? "" : "experience")}
               className="w-full flex items-center justify-between px-5 py-3 bg-secondary hover-elevate"
             >
-              <span className="text-sm md:text-base font-semibold">Experience</span>
+              <span className="text-sm md:text-base font-semibold">Work Experience</span>
               <ChevronDown className={`h-5 w-5 transition-transform ${expandedSection === "experience" ? "rotate-180" : ""}`} />
             </button>
             {expandedSection === "experience" && (
@@ -480,7 +480,7 @@ export default function Profile() {
               onClick={() => setExpandedSection(expandedSection === "reservation" ? "" : "reservation")}
               className="w-full flex items-center justify-between px-5 py-3 bg-secondary hover-elevate"
             >
-              <span className="text-sm md:text-base font-semibold">Reservation</span>
+              <span className="text-sm md:text-base font-semibold">Reservation Details</span>
               <ChevronDown className={`h-5 w-5 transition-transform ${expandedSection === "reservation" ? "rotate-180" : ""}`} />
             </button>
             {expandedSection === "reservation" && (
