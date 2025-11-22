@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Camera, Save, Loader2 } from "lucide-react";
+import { Camera, Save, Loader2, ChevronDown } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -15,6 +15,7 @@ import type { StudentProfile, InsertStudentProfile } from "@shared/schema";
 export default function Profile() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [expandedSection, setExpandedSection] = useState<string>("personal");
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -164,6 +165,12 @@ export default function Profile() {
     }
   };
 
+  const calculateProfileCompletion = () => {
+    const allFields = Object.values(formData);
+    const filledFields = allFields.filter(field => field && field !== "");
+    return Math.round((filledFields.length / allFields.length) * 100);
+  };
+
   const handleSave = () => {
     const { fullName, email, phone, dateOfBirth, address, education, skills, experience, photoUrl, ...profileDataFields } = formData;
     const data: InsertStudentProfile = {
@@ -232,111 +239,179 @@ export default function Profile() {
           <div>
             <h3 className="text-lg font-semibold">{formData.fullName || "Your Name"}</h3>
             <p className="text-sm text-muted-foreground">{formData.email || "your.email@example.com"}</p>
+            <p className="text-sm font-semibold text-primary mt-2">{calculateProfileCompletion()}% Profile Completed</p>
           </div>
         </div>
 
-        <Tabs defaultValue="personal" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 gap-3 h-auto bg-transparent p-0">
-            <TabsTrigger value="personal" className="px-5 py-3 text-sm md:text-base font-semibold rounded-lg h-12">Personal</TabsTrigger>
-            <TabsTrigger value="contact" className="px-5 py-3 text-sm md:text-base font-semibold rounded-lg h-12">Contact</TabsTrigger>
-            <TabsTrigger value="education" className="px-5 py-3 text-sm md:text-base font-semibold rounded-lg h-12">Education</TabsTrigger>
-            <TabsTrigger value="experience" className="px-5 py-3 text-sm md:text-base font-semibold rounded-lg h-12">Experience</TabsTrigger>
-            <TabsTrigger value="reservation" className="px-5 py-3 text-sm md:text-base font-semibold rounded-lg h-12">Reservation</TabsTrigger>
-            <TabsTrigger value="exam" className="px-5 py-3 text-sm md:text-base font-semibold rounded-lg h-12">Exam</TabsTrigger>
-            <TabsTrigger value="declaration" className="px-5 py-3 text-sm md:text-base font-semibold rounded-lg h-12">Declaration</TabsTrigger>
-          </TabsList>
+        <div className="space-y-4">
+          {/* Personal Details Section */}
+          <div className="border rounded-lg overflow-hidden">
+            <button
+              onClick={() => setExpandedSection(expandedSection === "personal" ? "" : "personal")}
+              className="w-full flex items-center justify-between px-5 py-3 bg-secondary hover-elevate"
+            >
+              <span className="text-sm md:text-base font-semibold">Personal</span>
+              <ChevronDown className={`h-5 w-5 transition-transform ${expandedSection === "personal" ? "rotate-180" : ""}`} />
+            </button>
+            {expandedSection === "personal" && (
+              <div className="p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2"><Label>Full Name (as per 10th certificate)</Label><Input name="fullName" value={formData.fullName} onChange={handleChange} data-testid="input-full-name" /></div>
+                  <div className="space-y-2"><Label>Father's Name</Label><Input name="fathersName" value={formData.fathersName} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Mother's Name</Label><Input name="mothersName" value={formData.mothersName} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Date of Birth</Label><Input name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={handleChange} data-testid="input-dob" /></div>
+                  <div className="space-y-2"><Label>Gender</Label><Input name="gender" value={formData.gender} onChange={handleChange} placeholder="Male / Female / Other" /></div>
+                  <div className="space-y-2"><Label>Marital Status</Label><Input name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} placeholder="Single / Married" /></div>
+                  <div className="space-y-2"><Label>Nationality</Label><Input name="nationality" value={formData.nationality} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Category</Label><Input name="category" value={formData.category} onChange={handleChange} placeholder="UR / OBC / SC / ST / EWS" /></div>
+                  <div className="space-y-2"><Label>Disability Status</Label><Input name="disabilityStatus" value={formData.disabilityStatus} onChange={handleChange} placeholder="Yes / No" /></div>
+                  <div className="space-y-2"><Label>Disability Type (if applicable)</Label><Input name="disabilityType" value={formData.disabilityType} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Minority Status (if applicable)</Label><Input name="minorityStatus" value={formData.minorityStatus} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Identification Type</Label><Input name="identificationIssueType" value={formData.identificationIssueType} onChange={handleChange} placeholder="Aadhaar / PAN / Voter ID / Passport / DL" /></div>
+                  <div className="space-y-2"><Label>Identification Number</Label><Input name="identificationNumber" value={formData.identificationNumber} onChange={handleChange} /></div>
+                </div>
+              </div>
+            )}
+          </div>
 
-          {/* Personal Details Tab */}
-          <TabsContent value="personal" className="mt-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2"><Label>Full Name (as per 10th certificate)</Label><Input name="fullName" value={formData.fullName} onChange={handleChange} data-testid="input-full-name" /></div>
-              <div className="space-y-2"><Label>Father's Name</Label><Input name="fathersName" value={formData.fathersName} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Mother's Name</Label><Input name="mothersName" value={formData.mothersName} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Date of Birth</Label><Input name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={handleChange} data-testid="input-dob" /></div>
-              <div className="space-y-2"><Label>Gender</Label><Input name="gender" value={formData.gender} onChange={handleChange} placeholder="Male / Female / Other" /></div>
-              <div className="space-y-2"><Label>Marital Status</Label><Input name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} placeholder="Single / Married" /></div>
-              <div className="space-y-2"><Label>Nationality</Label><Input name="nationality" value={formData.nationality} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Category</Label><Input name="category" value={formData.category} onChange={handleChange} placeholder="UR / OBC / SC / ST / EWS" /></div>
-              <div className="space-y-2"><Label>Disability Status</Label><Input name="disabilityStatus" value={formData.disabilityStatus} onChange={handleChange} placeholder="Yes / No" /></div>
-              <div className="space-y-2"><Label>Disability Type (if applicable)</Label><Input name="disabilityType" value={formData.disabilityType} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Minority Status (if applicable)</Label><Input name="minorityStatus" value={formData.minorityStatus} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Identification Type</Label><Input name="identificationIssueType" value={formData.identificationIssueType} onChange={handleChange} placeholder="Aadhaar / PAN / Voter ID / Passport / DL" /></div>
-              <div className="space-y-2"><Label>Identification Number</Label><Input name="identificationNumber" value={formData.identificationNumber} onChange={handleChange} /></div>
-            </div>
-          </TabsContent>
+          {/* Contact Information Section */}
+          <div className="border rounded-lg overflow-hidden">
+            <button
+              onClick={() => setExpandedSection(expandedSection === "contact" ? "" : "contact")}
+              className="w-full flex items-center justify-between px-5 py-3 bg-secondary hover-elevate"
+            >
+              <span className="text-sm md:text-base font-semibold">Contact</span>
+              <ChevronDown className={`h-5 w-5 transition-transform ${expandedSection === "contact" ? "rotate-180" : ""}`} />
+            </button>
+            {expandedSection === "contact" && (
+              <div className="p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2"><Label>Mobile Number</Label><Input name="mobileNumber" value={formData.mobileNumber} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Email ID</Label><Input name="email" type="email" value={formData.email} onChange={handleChange} data-testid="input-email" /></div>
+                  <div className="space-y-2 md:col-span-2"><Label>Permanent Address</Label><Textarea name="address" value={formData.address} onChange={handleChange} rows={2} data-testid="input-address" /></div>
+                  <div className="space-y-2 md:col-span-2"><Label>Correspondence Address (if different)</Label><Textarea name="correspondenceAddress" value={formData.correspondenceAddress} onChange={handleChange} rows={2} /></div>
+                  <div className="space-y-2"><Label>State</Label><Input name="state" value={formData.state} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>District</Label><Input name="district" value={formData.district} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>PIN Code</Label><Input name="pinCode" value={formData.pinCode} onChange={handleChange} /></div>
+                </div>
+              </div>
+            )}
+          </div>
 
-          {/* Contact Information Tab */}
-          <TabsContent value="contact" className="mt-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2"><Label>Mobile Number</Label><Input name="mobileNumber" value={formData.mobileNumber} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Email ID</Label><Input name="email" type="email" value={formData.email} onChange={handleChange} data-testid="input-email" /></div>
-              <div className="space-y-2 md:col-span-2"><Label>Permanent Address</Label><Textarea name="address" value={formData.address} onChange={handleChange} rows={2} data-testid="input-address" /></div>
-              <div className="space-y-2 md:col-span-2"><Label>Correspondence Address (if different)</Label><Textarea name="correspondenceAddress" value={formData.correspondenceAddress} onChange={handleChange} rows={2} /></div>
-              <div className="space-y-2"><Label>State</Label><Input name="state" value={formData.state} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>District</Label><Input name="district" value={formData.district} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>PIN Code</Label><Input name="pinCode" value={formData.pinCode} onChange={handleChange} /></div>
-            </div>
-          </TabsContent>
+          {/* Educational Qualification Section */}
+          <div className="border rounded-lg overflow-hidden">
+            <button
+              onClick={() => setExpandedSection(expandedSection === "education" ? "" : "education")}
+              className="w-full flex items-center justify-between px-5 py-3 bg-secondary hover-elevate"
+            >
+              <span className="text-sm md:text-base font-semibold">Education</span>
+              <ChevronDown className={`h-5 w-5 transition-transform ${expandedSection === "education" ? "rotate-180" : ""}`} />
+            </button>
+            {expandedSection === "education" && (
+              <div className="p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2"><Label>Highest Qualification</Label><Input name="highestQualification" value={formData.highestQualification} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Course / Degree Name</Label><Input name="courseName" value={formData.courseName} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Board / University</Label><Input name="boardUniversity" value={formData.boardUniversity} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Date of Passing</Label><Input name="dateOfPassing" type="date" value={formData.dateOfPassing} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Roll Number / Registration Number</Label><Input name="rollNumber" value={formData.rollNumber} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Percentage / CGPA</Label><Input name="percentageCGPA" value={formData.percentageCGPA} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Stream / Subjects</Label><Input name="stream" value={formData.stream} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Additional Qualifications</Label><Input name="additionalQualifications" value={formData.additionalQualifications} onChange={handleChange} placeholder="Computer / Diploma / ITI etc." /></div>
+                </div>
+              </div>
+            )}
+          </div>
 
-          {/* Educational Qualification Tab */}
-          <TabsContent value="education" className="mt-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2"><Label>Highest Qualification</Label><Input name="highestQualification" value={formData.highestQualification} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Course / Degree Name</Label><Input name="courseName" value={formData.courseName} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Board / University</Label><Input name="boardUniversity" value={formData.boardUniversity} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Date of Passing</Label><Input name="dateOfPassing" type="date" value={formData.dateOfPassing} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Roll Number / Registration Number</Label><Input name="rollNumber" value={formData.rollNumber} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Percentage / CGPA</Label><Input name="percentageCGPA" value={formData.percentageCGPA} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Stream / Subjects</Label><Input name="stream" value={formData.stream} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Additional Qualifications</Label><Input name="additionalQualifications" value={formData.additionalQualifications} onChange={handleChange} placeholder="Computer / Diploma / ITI etc." /></div>
-            </div>
-          </TabsContent>
+          {/* Employment Experience Section */}
+          <div className="border rounded-lg overflow-hidden">
+            <button
+              onClick={() => setExpandedSection(expandedSection === "experience" ? "" : "experience")}
+              className="w-full flex items-center justify-between px-5 py-3 bg-secondary hover-elevate"
+            >
+              <span className="text-sm md:text-base font-semibold">Experience</span>
+              <ChevronDown className={`h-5 w-5 transition-transform ${expandedSection === "experience" ? "rotate-180" : ""}`} />
+            </button>
+            {expandedSection === "experience" && (
+              <div className="p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2"><Label>Work Experience</Label><Input name="workExperience" value={formData.workExperience} onChange={handleChange} placeholder="Yes / No" /></div>
+                  <div className="space-y-2"><Label>Organization Name</Label><Input name="organizationName" value={formData.organizationName} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Job Title / Post Held</Label><Input name="jobTitle" value={formData.jobTitle} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Start Date</Label><Input name="startDate" type="date" value={formData.startDate} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>End Date</Label><Input name="endDate" type="date" value={formData.endDate} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Total Experience (months/years)</Label><Input name="totalExperience" value={formData.totalExperience} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Salary / Pay Level</Label><Input name="salary" value={formData.salary} onChange={handleChange} /></div>
+                </div>
+              </div>
+            )}
+          </div>
 
-          {/* Employment Experience Tab */}
-          <TabsContent value="experience" className="mt-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2"><Label>Work Experience</Label><Input name="workExperience" value={formData.workExperience} onChange={handleChange} placeholder="Yes / No" /></div>
-              <div className="space-y-2"><Label>Organization Name</Label><Input name="organizationName" value={formData.organizationName} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Job Title / Post Held</Label><Input name="jobTitle" value={formData.jobTitle} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Start Date</Label><Input name="startDate" type="date" value={formData.startDate} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>End Date</Label><Input name="endDate" type="date" value={formData.endDate} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Total Experience (months/years)</Label><Input name="totalExperience" value={formData.totalExperience} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Salary / Pay Level</Label><Input name="salary" value={formData.salary} onChange={handleChange} /></div>
-            </div>
-          </TabsContent>
+          {/* Reservation & Certificates Section */}
+          <div className="border rounded-lg overflow-hidden">
+            <button
+              onClick={() => setExpandedSection(expandedSection === "reservation" ? "" : "reservation")}
+              className="w-full flex items-center justify-between px-5 py-3 bg-secondary hover-elevate"
+            >
+              <span className="text-sm md:text-base font-semibold">Reservation</span>
+              <ChevronDown className={`h-5 w-5 transition-transform ${expandedSection === "reservation" ? "rotate-180" : ""}`} />
+            </button>
+            {expandedSection === "reservation" && (
+              <div className="p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2"><Label>Caste Certificate Number</Label><Input name="casteCertificateNumber" value={formData.casteCertificateNumber} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Caste Certificate Issue Date</Label><Input name="casteCertificateIssueDate" type="date" value={formData.casteCertificateIssueDate} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Issuing Authority</Label><Input name="casteCertificateAuthority" value={formData.casteCertificateAuthority} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>EWS Certificate Number</Label><Input name="ewsCertificateNumber" value={formData.ewsCertificateNumber} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>PwD Medical Certificate</Label><Input name="pwdMedicalCertificate" value={formData.pwdMedicalCertificate} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>NCC Certificate</Label><Input name="nccCertificate" value={formData.nccCertificate} onChange={handleChange} /></div>
+                  <div className="space-y-2 md:col-span-2"><Label>Ex-Serviceman Details (Service Duration, Discharge Book No.)</Label><Textarea name="exServicemanDetails" value={formData.exServicemanDetails} onChange={handleChange} rows={2} /></div>
+                  <div className="space-y-2 md:col-span-2"><Label>Domicile Certificate</Label><Textarea name="domicileCertificate" value={formData.domicileCertificate} onChange={handleChange} rows={2} /></div>
+                </div>
+              </div>
+            )}
+          </div>
 
-          {/* Reservation & Certificates Tab */}
-          <TabsContent value="reservation" className="mt-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2"><Label>Caste Certificate Number</Label><Input name="casteCertificateNumber" value={formData.casteCertificateNumber} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Caste Certificate Issue Date</Label><Input name="casteCertificateIssueDate" type="date" value={formData.casteCertificateIssueDate} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Issuing Authority</Label><Input name="casteCertificateAuthority" value={formData.casteCertificateAuthority} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>EWS Certificate Number</Label><Input name="ewsCertificateNumber" value={formData.ewsCertificateNumber} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>PwD Medical Certificate</Label><Input name="pwdMedicalCertificate" value={formData.pwdMedicalCertificate} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>NCC Certificate</Label><Input name="nccCertificate" value={formData.nccCertificate} onChange={handleChange} /></div>
-              <div className="space-y-2 md:col-span-2"><Label>Ex-Serviceman Details (Service Duration, Discharge Book No.)</Label><Textarea name="exServicemanDetails" value={formData.exServicemanDetails} onChange={handleChange} rows={2} /></div>
-              <div className="space-y-2 md:col-span-2"><Label>Domicile Certificate</Label><Textarea name="domicileCertificate" value={formData.domicileCertificate} onChange={handleChange} rows={2} /></div>
-            </div>
-          </TabsContent>
+          {/* Exam / Application-Specific Section */}
+          <div className="border rounded-lg overflow-hidden">
+            <button
+              onClick={() => setExpandedSection(expandedSection === "exam" ? "" : "exam")}
+              className="w-full flex items-center justify-between px-5 py-3 bg-secondary hover-elevate"
+            >
+              <span className="text-sm md:text-base font-semibold">Exam</span>
+              <ChevronDown className={`h-5 w-5 transition-transform ${expandedSection === "exam" ? "rotate-180" : ""}`} />
+            </button>
+            {expandedSection === "exam" && (
+              <div className="p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2"><Label>Exam Center Preference (City)</Label><Input name="examCenterPreference" value={formData.examCenterPreference} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Post Preference (if multiple)</Label><Input name="postPreference" value={formData.postPreference} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Language Preference</Label><Input name="languagePreference" value={formData.languagePreference} onChange={handleChange} /></div>
+                  <div className="space-y-2"><Label>Shift Preference (if applicable)</Label><Input name="shiftPreference" value={formData.shiftPreference} onChange={handleChange} /></div>
+                </div>
+              </div>
+            )}
+          </div>
 
-          {/* Exam / Application-Specific Tab */}
-          <TabsContent value="exam" className="mt-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2"><Label>Exam Center Preference (City)</Label><Input name="examCenterPreference" value={formData.examCenterPreference} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Post Preference (if multiple)</Label><Input name="postPreference" value={formData.postPreference} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Language Preference</Label><Input name="languagePreference" value={formData.languagePreference} onChange={handleChange} /></div>
-              <div className="space-y-2"><Label>Shift Preference (if applicable)</Label><Input name="shiftPreference" value={formData.shiftPreference} onChange={handleChange} /></div>
-            </div>
-          </TabsContent>
-
-          {/* Final Declarations Tab */}
-          <TabsContent value="declaration" className="mt-6 space-y-6">
-            <div className="space-y-2">
-              <Label>Self Declaration</Label>
-              <Textarea name="selfDeclaration" value={formData.selfDeclaration} onChange={handleChange} rows={5} placeholder="Enter your self declaration here..." />
-            </div>
-          </TabsContent>
-        </Tabs>
+          {/* Declaration Section */}
+          <div className="border rounded-lg overflow-hidden">
+            <button
+              onClick={() => setExpandedSection(expandedSection === "declaration" ? "" : "declaration")}
+              className="w-full flex items-center justify-between px-5 py-3 bg-secondary hover-elevate"
+            >
+              <span className="text-sm md:text-base font-semibold">Declaration</span>
+              <ChevronDown className={`h-5 w-5 transition-transform ${expandedSection === "declaration" ? "rotate-180" : ""}`} />
+            </button>
+            {expandedSection === "declaration" && (
+              <div className="p-6 space-y-6">
+                <div className="space-y-2">
+                  <Label>Self Declaration</Label>
+                  <Textarea name="selfDeclaration" value={formData.selfDeclaration} onChange={handleChange} rows={5} placeholder="Enter your self declaration here..." />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
 
         <Button
           onClick={handleSave}
