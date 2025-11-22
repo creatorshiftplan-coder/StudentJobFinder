@@ -62,34 +62,34 @@ export function ApplicationCard({ application, onViewDetails }: ApplicationCardP
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2 pt-2">
+        <div className="flex flex-wrap gap-3 pt-4">
           {application.admitCardUrl && (
             <Button 
               variant="outline" 
-              size="sm"
               onClick={() => console.log('Download admit card')}
               data-testid={`button-admit-card-${application.id}`}
+              className="px-6 py-2 text-base font-semibold"
             >
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="h-5 w-5 mr-2" />
               Admit Card
             </Button>
           )}
           {application.resultUrl && (
             <Button 
               variant="outline" 
-              size="sm"
               onClick={() => console.log('View result')}
               data-testid={`button-result-${application.id}`}
+              className="px-6 py-2 text-base font-semibold"
             >
-              <ExternalLink className="h-4 w-4 mr-2" />
+              <ExternalLink className="h-5 w-5 mr-2" />
               View Result
             </Button>
           )}
           <Button 
-            variant="ghost" 
-            size="sm"
+            variant="default" 
             onClick={() => onViewDetails?.(application.id)}
             data-testid={`button-details-${application.id}`}
+            className="px-6 py-2 text-base font-semibold"
           >
             View Details
           </Button>

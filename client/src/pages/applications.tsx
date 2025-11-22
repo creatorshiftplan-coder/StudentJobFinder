@@ -64,10 +64,10 @@ export default function Applications() {
         <p className="text-muted-foreground mt-2">Track applications and browse job listings</p>
       </div>
 
-      <div className="flex gap-4 border-b">
+      <div className="flex gap-2 border-b">
         <button
           onClick={() => setActiveSection("applications")}
-          className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+          className={`px-6 py-3 font-semibold text-lg border-b-4 transition-colors ${
             activeSection === "applications"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -75,13 +75,13 @@ export default function Applications() {
           data-testid="button-section-applications"
         >
           <div className="flex items-center gap-2">
-            <ClipboardList className="h-4 w-4" />
+            <ClipboardList className="h-5 w-5" />
             Applications ({applications.length})
           </div>
         </button>
         <button
           onClick={() => setActiveSection("listings")}
-          className={`px-4 py-2 font-medium border-b-2 transition-colors ${
+          className={`px-6 py-3 font-semibold text-lg border-b-4 transition-colors ${
             activeSection === "listings"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -89,7 +89,7 @@ export default function Applications() {
           data-testid="button-section-listings"
         >
           <div className="flex items-center gap-2">
-            <Briefcase className="h-4 w-4" />
+            <Briefcase className="h-5 w-5" />
             Job Listings
           </div>
         </button>
@@ -97,26 +97,26 @@ export default function Applications() {
 
       {activeSection === "applications" && (
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 max-w-4xl overflow-x-auto">
-            <TabsTrigger value="all" data-testid="tab-all">
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 max-w-4xl overflow-x-auto h-auto gap-1 bg-transparent p-0">
+            <TabsTrigger value="all" data-testid="tab-all" className="px-4 py-3 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
               All ({applications.length})
             </TabsTrigger>
-            <TabsTrigger value="pending" data-testid="tab-pending">
+            <TabsTrigger value="pending" data-testid="tab-pending" className="px-4 py-3 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
               Pending ({filterByStatus("pending").length})
             </TabsTrigger>
-            <TabsTrigger value="applied" data-testid="tab-applied">
+            <TabsTrigger value="applied" data-testid="tab-applied" className="px-4 py-3 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
               Applied ({filterByStatus("applied").length})
             </TabsTrigger>
-            <TabsTrigger value="admit_card_released" data-testid="tab-admit-card">
+            <TabsTrigger value="admit_card_released" data-testid="tab-admit-card" className="px-4 py-3 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
               Admit Card ({filterByStatus("admit_card_released").length})
             </TabsTrigger>
-            <TabsTrigger value="result_released" data-testid="tab-result-released">
+            <TabsTrigger value="result_released" data-testid="tab-result-released" className="px-4 py-3 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
               Result ({filterByStatus("result_released").length})
             </TabsTrigger>
-            <TabsTrigger value="selected" data-testid="tab-selected">
+            <TabsTrigger value="selected" data-testid="tab-selected" className="px-4 py-3 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
               Selected ({filterByStatus("selected").length})
             </TabsTrigger>
-            <TabsTrigger value="rejected" data-testid="tab-rejected">
+            <TabsTrigger value="rejected" data-testid="tab-rejected" className="px-4 py-3 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
               Rejected ({filterByStatus("rejected").length})
             </TabsTrigger>
           </TabsList>
