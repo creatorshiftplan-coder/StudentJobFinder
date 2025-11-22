@@ -15,19 +15,21 @@ import {
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { Job } from "@shared/schema";
+import type { Job, JOB_CATEGORIES } from "@shared/schema";
 
 export default function Jobs() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
+  const [filterCategory, setFilterCategory] = useState("all");
 
   const { data: jobs = [], isLoading } = useQuery<Job[]>({
-    queryKey: ["/api/jobs", searchQuery, filterType],
+    queryKey: ["/api/jobs", searchQuery, filterType, filterCategory],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (searchQuery) params.append("query", searchQuery);
       if (filterType !== "all") params.append("type", filterType);
+      if (filterCategory !== "all") params.append("category", filterCategory);
       
       const response = await fetch(`/api/jobs?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to fetch jobs");
@@ -67,44 +69,64 @@ export default function Jobs() {
       </div>
 
       <Card className="p-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search jobs..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-              data-testid="input-search-jobs"
-            />
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search jobs..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+                data-testid="input-search-jobs"
+              />
+            </div>
+            <Button
+              onClick={() => scrapeMutation.mutate()}
+              disabled={scrapeMutation.isPending || isLoading}
+              variant="outline"
+              data-testid="button-refresh-jobs"
+              title="Refresh jobs from official government sources"
+            >
+              {scrapeMutation.isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4 mr-2" />
+              )}
+              {scrapeMutation.isPending ? "Refreshing..." : "Refresh"}
+            </Button>
           </div>
-          <Select value={filterType} onValueChange={setFilterType}>
-            <SelectTrigger className="w-full md:w-48" data-testid="select-job-type">
-              <Filter className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Job Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="Full-time">Full-time</SelectItem>
-              <SelectItem value="Part-time">Part-time</SelectItem>
-              <SelectItem value="Contract">Contract</SelectItem>
-              <SelectItem value="Internship">Internship</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button
-            onClick={() => scrapeMutation.mutate()}
-            disabled={scrapeMutation.isPending || isLoading}
-            variant="outline"
-            data-testid="button-refresh-jobs"
-            title="Refresh jobs from official government sources"
-          >
-            {scrapeMutation.isPending ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4 mr-2" />
-            )}
-            {scrapeMutation.isPending ? "Refreshing..." : "Refresh"}
-          </Button>
+
+          <div className="flex flex-col md:flex-row gap-4">
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <SelectTrigger className="w-full md:w-64" data-testid="select-job-category">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Job Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {["Central Government", "State Government", "Public Sector Undertaking (PSU)", "Defence", "Railways", "Banking", "Police", "Judiciary", "Teaching / Education", "Health / Medical", "Engineering / Technical", "Administrative / Civil Services", "Apprenticeship", "Contract / Temporary", "Internship / Training"].map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={filterType} onValueChange={setFilterType}>
+              <SelectTrigger className="w-full md:w-48" data-testid="select-job-type">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Job Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="Full-time">Full-time</SelectItem>
+                <SelectItem value="Part-time">Part-time</SelectItem>
+                <SelectItem value="Contract">Contract</SelectItem>
+                <SelectItem value="Internship">Internship</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </Card>
 

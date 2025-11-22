@@ -210,10 +210,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Job Routes
   app.get("/api/jobs", async (req, res) => {
     try {
-      const { query = "", type } = req.query;
+      const { query = "", type, category } = req.query;
       const jobs = await storage.searchJobs(
         query as string,
-        type as string | undefined
+        type as string | undefined,
+        category as string | undefined
       );
       res.json(jobs);
     } catch (error) {
@@ -364,6 +365,7 @@ Example response format:
           company: "Tech Solutions Ltd",
           location: "Bangalore, India",
           type: "Full-time",
+          category: "Engineering / Technical",
           deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           description: "We are seeking a talented Software Engineer to join our team.",
           salary: "₹8-12 LPA",
@@ -374,6 +376,7 @@ Example response format:
           company: "Analytics Corp",
           location: "Hyderabad, India",
           type: "Full-time",
+          category: "Central Government",
           deadline: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           description: "Looking for a skilled Data Analyst to help us make data-driven decisions.",
           salary: "₹6-9 LPA",
@@ -384,6 +387,7 @@ Example response format:
           company: "WebDev Studios",
           location: "Mumbai, India",
           type: "Contract",
+          category: "Engineering / Technical",
           deadline: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           description: "Join our creative team to build beautiful web applications.",
           salary: "₹7-10 LPA",

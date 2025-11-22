@@ -109,6 +109,33 @@ async function fetchWithRetry(
   throw lastError || new Error("Failed to fetch after retries");
 }
 
+// Map sources to job categories
+function getCategoryForSource(source: string): string {
+  const categoryMap: Record<string, string> = {
+    UPSC: "Administrative / Civil Services",
+    SSC: "Central Government",
+    RRB: "Railways",
+    IBPS: "Banking",
+    RBI: "Banking",
+    SBI: "Banking",
+    "India Post": "Central Government",
+    DRDO: "Defence",
+    ISRO: "Defence",
+    BARC: "Defence",
+    AIIMS: "Health / Medical",
+    ESIC: "Health / Medical",
+    "Coal India": "Public Sector Undertaking (PSU)",
+    BSNL: "Public Sector Undertaking (PSU)",
+    LIC: "Public Sector Undertaking (PSU)",
+    UCIL: "Public Sector Undertaking (PSU)",
+    AAI: "Public Sector Undertaking (PSU)",
+    NTPC: "Public Sector Undertaking (PSU)",
+    BHEL: "Public Sector Undertaking (PSU)",
+    HPCL: "Public Sector Undertaking (PSU)",
+  };
+  return categoryMap[source] || "State Government";
+}
+
 // Extract jobs using Gemini AI
 async function extractJobsWithAI(htmlContent: string, source: string): Promise<InsertJob[]> {
   try {
@@ -144,6 +171,7 @@ ${htmlContent.substring(0, 8000)}`;
     }
 
     const extractedJobs = JSON.parse(jsonMatch[0]);
+    const category = getCategoryForSource(source);
 
     // Map to InsertJob format
     return extractedJobs
@@ -154,6 +182,7 @@ ${htmlContent.substring(0, 8000)}`;
         company: String(job.company).substring(0, 100),
         location: String(job.location || source).substring(0, 100),
         type: String(job.type || "Full-time"),
+        category,
         deadline:
           job.deadline ||
           new Date(Date.now() + 60 * 24 * 60 * 60 * 1000)

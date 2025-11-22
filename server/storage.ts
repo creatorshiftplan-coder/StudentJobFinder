@@ -174,7 +174,7 @@ export class MemStorage implements IStorage {
     return Array.from(this.jobs.values());
   }
 
-  async searchJobs(query: string, type?: string): Promise<Job[]> {
+  async searchJobs(query: string, type?: string, category?: string): Promise<Job[]> {
     const allJobs = Array.from(this.jobs.values());
     return allJobs.filter((job) => {
       const matchesQuery = query
@@ -183,7 +183,8 @@ export class MemStorage implements IStorage {
           job.description.toLowerCase().includes(query.toLowerCase())
         : true;
       const matchesType = type && type !== "all" ? job.type === type : true;
-      return matchesQuery && matchesType;
+      const matchesCategory = category && category !== "all" ? job.category === category : true;
+      return matchesQuery && matchesType && matchesCategory;
     });
   }
 

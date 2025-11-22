@@ -73,6 +73,7 @@ export interface Job {
   company: string;
   location: string;
   type: string;
+  category: string;
   deadline: string;
   description: string;
   salary?: string;
@@ -85,6 +86,7 @@ export const insertJobSchema = z.object({
   company: z.string().min(1, "Company name is required"),
   location: z.string().min(1, "Location is required"),
   type: z.string(),
+  category: z.string().default("Central Government"),
   deadline: z.string(),
   description: z.string(),
   salary: z.string().optional(),
@@ -92,6 +94,24 @@ export const insertJobSchema = z.object({
 });
 
 export type InsertJob = z.infer<typeof insertJobSchema>;
+
+export const JOB_CATEGORIES = [
+  "Central Government",
+  "State Government",
+  "Public Sector Undertaking (PSU)",
+  "Defence",
+  "Railways",
+  "Banking",
+  "Police",
+  "Judiciary",
+  "Teaching / Education",
+  "Health / Medical",
+  "Engineering / Technical",
+  "Administrative / Civil Services",
+  "Apprenticeship",
+  "Contract / Temporary",
+  "Internship / Training",
+] as const;
 
 // Application Schema
 export interface Application {
