@@ -1,4 +1,4 @@
-import { useState, useContext, createContext, useEffect, type ReactNode } from "react";
+import { useState, useContext, createContext, useEffect, ReactNode } from "react";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://cvnalogvvfzapxmozdyh.supabase.co";
 
@@ -18,7 +18,7 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider(props: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -85,11 +85,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("userEmail");
   };
 
-  const value = { user, loading, accessToken, login, signup, logout };
-
   return (
-    <AuthContext.Provider value={value}>
-      {children}
+    <AuthContext.Provider
+      value={{ user, loading, accessToken, login, signup, logout }}
+    >
+      {props.children}
     </AuthContext.Provider>
   );
 }
