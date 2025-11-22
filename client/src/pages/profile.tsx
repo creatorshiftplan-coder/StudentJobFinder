@@ -236,14 +236,14 @@ export default function Profile() {
         </div>
 
         <Tabs defaultValue="personal" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 gap-1 h-auto bg-transparent p-0">
-            <TabsTrigger value="personal" className="px-3 py-2 text-xs md:text-sm font-semibold rounded-lg">Personal</TabsTrigger>
-            <TabsTrigger value="contact" className="px-3 py-2 text-xs md:text-sm font-semibold rounded-lg">Contact</TabsTrigger>
-            <TabsTrigger value="education" className="px-3 py-2 text-xs md:text-sm font-semibold rounded-lg">Education</TabsTrigger>
-            <TabsTrigger value="experience" className="px-3 py-2 text-xs md:text-sm font-semibold rounded-lg">Experience</TabsTrigger>
-            <TabsTrigger value="reservation" className="px-3 py-2 text-xs md:text-sm font-semibold rounded-lg">Reservation</TabsTrigger>
-            <TabsTrigger value="exam" className="px-3 py-2 text-xs md:text-sm font-semibold rounded-lg">Exam</TabsTrigger>
-            <TabsTrigger value="declaration" className="px-3 py-2 text-xs md:text-sm font-semibold rounded-lg">Declaration</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 gap-3 h-auto bg-transparent p-0">
+            <TabsTrigger value="personal" className="px-5 py-3 text-sm md:text-base font-semibold rounded-lg h-12">Personal</TabsTrigger>
+            <TabsTrigger value="contact" className="px-5 py-3 text-sm md:text-base font-semibold rounded-lg h-12">Contact</TabsTrigger>
+            <TabsTrigger value="education" className="px-5 py-3 text-sm md:text-base font-semibold rounded-lg h-12">Education</TabsTrigger>
+            <TabsTrigger value="experience" className="px-5 py-3 text-sm md:text-base font-semibold rounded-lg h-12">Experience</TabsTrigger>
+            <TabsTrigger value="reservation" className="px-5 py-3 text-sm md:text-base font-semibold rounded-lg h-12">Reservation</TabsTrigger>
+            <TabsTrigger value="exam" className="px-5 py-3 text-sm md:text-base font-semibold rounded-lg h-12">Exam</TabsTrigger>
+            <TabsTrigger value="declaration" className="px-5 py-3 text-sm md:text-base font-semibold rounded-lg h-12">Declaration</TabsTrigger>
           </TabsList>
 
           {/* Personal Details Tab */}
