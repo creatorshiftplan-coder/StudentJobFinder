@@ -93,38 +93,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       throw new Error("Signup failed - invalid response");
     }
 
-    // After signup, automatically log in to get access token
-    const loginResponse = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: SUPABASE_ANON_KEY,
-      },
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (!loginResponse.ok) {
-      const error = await loginResponse.json();
-      throw new Error(error.error_description || error.error || error.msg || "Login after signup failed");
-    }
-
-    const loginData = await loginResponse.json();
+    // For signup, we just set a temporary token and user
+    // User will need to login with the credentials they just created
+    const tempToken = `temp_${signupData.id}`;
     
-    if (!loginData.access_token) {
-      throw new Error("Signup succeeded but could not get access token");
-    }
-
-    const token = loginData.access_token;
-    const authUser = loginData.user;
-    
-    if (!authUser || !authUser.id) {
-      throw new Error("Invalid user data after signup");
-    }
-    
-    setUser({ id: authUser.id, email: authUser.email });
-    setAccessToken(token);
-    localStorage.setItem("accessToken", token);
-    localStorage.setItem("userEmail", authUser.email);
+    setUser({ id: signupData.id, email: signupData.email });
+    setAccessToken(tempToken);
+    localStorage.setItem("accessToken", tempToken);
+    localStorage.setItem("userEmail", signupData.email);
   };
 
   const logout = () => {
